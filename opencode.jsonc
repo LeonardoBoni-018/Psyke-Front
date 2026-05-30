@@ -1,0 +1,35 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "command": {
+    "dev": {
+      "description": "Start development server",
+      "command": "npm run dev"
+    },
+    "build": {
+      "description": "Build for production",
+      "command": "npm run build"
+    },
+    "lint": {
+      "description": "Run ESLint",
+      "command": "npm run lint"
+    },
+    "typecheck": {
+      "description": "Run TypeScript type checking",
+      "command": "npx tsc --noEmit"
+    },
+    "preview": {
+      "description": "Preview production build",
+      "command": "npm run preview"
+    }
+  },
+  "agent": {
+    "review": {
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    }
+  }
+}
