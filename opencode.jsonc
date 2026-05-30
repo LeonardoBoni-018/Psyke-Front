@@ -21,6 +21,14 @@
     "preview": {
       "description": "Preview production build",
       "command": "npm run preview"
+    },
+    "test": {
+      "description": "Run unit tests",
+      "command": "npm run test"
+    },
+    "test:watch": {
+      "description": "Run unit tests in watch mode",
+      "command": "npm run test:watch"
     }
   },
   "agent": {
