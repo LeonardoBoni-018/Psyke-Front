@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { login as loginApi, logout as logoutApi } from '@/features/auth/services/authApi'

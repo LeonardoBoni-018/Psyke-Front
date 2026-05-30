@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Suspense, lazy, type ReactNode } from 'react'
-import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout/AppLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { PageSkeleton } from '@/components/shared/LoadingSkeleton/PageSkeleton'
@@ -9,7 +10,7 @@ const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPag
 const AgendaPage = lazy(() => import('@/features/agenda/pages/AgendaPage'))
 const PatientsPage = lazy(() => import('@/features/patients/pages/PatientsPage'))
 const PatientDetailPage = lazy(() => import('@/features/patients/pages/PatientDetailPage'))
-const MedicalRecordPage = lazy(() => import('@/features/medical-records/pages/MedicalRecordPage'))
+const MedicalRecordsPage = lazy(() => import('@/features/medical-records/pages/MedicalRecordsPage'))
 const FinancialPage = lazy(() => import('@/features/financial/pages/FinancialPage'))
 const ProfessionalsPage = lazy(() => import('@/features/professionals/pages/ProfessionalsPage'))
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'))
@@ -61,7 +62,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'patients/:id/record',
-        element: <SuspendedPage><MedicalRecordPage /></SuspendedPage>,
+        element: <SuspendedPage><MedicalRecordsPage /></SuspendedPage>,
       },
       {
         path: 'financial',
