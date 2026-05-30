@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   createCharge,
   exportCharge,
@@ -32,8 +33,12 @@ export function useCreateCharge() {
   return useMutation({
     mutationFn: createCharge,
     onSuccess: () => {
+      toast.success('Cobrança criada com sucesso')
       queryClient.invalidateQueries({ queryKey: FINANCIAL_CHARGES_KEY })
       queryClient.invalidateQueries({ queryKey: FINANCIAL_SUMMARY_KEY })
+    },
+    onError: (error: Error) => {
+      toast.error('Erro ao criar cobrança', { description: error.message })
     },
   })
 }
@@ -43,8 +48,12 @@ export function useMarkChargePaid() {
   return useMutation({
     mutationFn: markChargePaid,
     onSuccess: () => {
+      toast.success('Cobrança marcada como paga')
       queryClient.invalidateQueries({ queryKey: FINANCIAL_CHARGES_KEY })
       queryClient.invalidateQueries({ queryKey: FINANCIAL_SUMMARY_KEY })
+    },
+    onError: (error: Error) => {
+      toast.error('Erro ao marcar cobrança', { description: error.message })
     },
   })
 }
@@ -52,5 +61,8 @@ export function useMarkChargePaid() {
 export function useExportCharge() {
   return useMutation({
     mutationFn: exportCharge,
+    onError: (error: Error) => {
+      toast.error('Erro ao exportar cobrança', { description: error.message })
+    },
   })
 }

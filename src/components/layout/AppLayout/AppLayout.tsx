@@ -3,21 +3,25 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { SidebarMemo } from '@/components/layout/Sidebar/Sidebar'
 import { Topbar } from '@/components/layout/Topbar/Topbar'
 
-const titles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/agenda': 'Agenda',
-  '/patients': 'Pacientes',
-  '/medical-records': 'Prontuários',
-  '/financial': 'Financeiro',
-  '/professionals': 'Profissionais',
-  '/reports': 'Relatórios',
-  '/settings': 'Configurações',
-}
+const titleRules: Array<{ pattern: RegExp; getTitle: () => string }> = [
+  { pattern: /^\/dashboard$/, getTitle: () => 'Dashboard' },
+  { pattern: /^\/agenda$/, getTitle: () => 'Agenda' },
+  { pattern: /^\/patients\/[^/]+\/record$/, getTitle: () => 'Prontuário' },
+  { pattern: /^\/patients\/[^/]+$/, getTitle: () => 'Detalhes do paciente' },
+  { pattern: /^\/patients$/, getTitle: () => 'Pacientes' },
+  { pattern: /^\/financial$/, getTitle: () => 'Financeiro' },
+  { pattern: /^\/professionals$/, getTitle: () => 'Profissionais' },
+  { pattern: /^\/reports$/, getTitle: () => 'Relatórios' },
+  { pattern: /^\/settings$/, getTitle: () => 'Configurações' },
+]
 
 export function AppLayout() {
   const location = useLocation()
 
-  const pageTitle = useMemo(() => titles[location.pathname] ?? 'Psyke', [location.pathname])
+  const pageTitle = useMemo(
+    () => titleRules.find((r) => r.pattern.test(location.pathname))?.getTitle() ?? 'Psyke',
+    [location.pathname],
+  )
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-0 text-text-1">
