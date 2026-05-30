@@ -1,11 +1,12 @@
-export function PatientsPage() {
+export default function PatientsPage() {
   return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold text-slate-900">Pacientes</h1>
-        <p className="mt-2 text-sm text-slate-600">Gerencie pacientes, histórico e agendas individuais.</p>
-      </header>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">Em desenvolvimento</div>
-    </section>
+    <div style={{ padding: '24px' }}>
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: 'var(--text-1)' }}>
+        Pacientes
+      </h1>
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-3)', marginTop: '8px' }}>
+        Em desenvolvimento — Sprint 1
+      </p>
+    </div>
   )
 }

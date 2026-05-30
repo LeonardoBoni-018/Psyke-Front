@@ -1,12 +1,19 @@
-export type Response<T> = {
+export interface ApiResponse<T> {
   data: T
+  message?: string
 }
 
-export type PaginatedResponse<T> = {
-  data: T[]
-  meta: {
-    total: number
-    page: number
-    pageSize: number
-  }
+export interface PaginatedResponse<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  number: number
+  size: number
+}
+
+export interface ApiError {
+  status: number
+  message: string
+  errors?: Record<string, string>
+  timestamp: string
 }

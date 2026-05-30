@@ -1,55 +1,108 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button } from '../../../components/ui/Button'
+import { Building2, Mail, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { useLogin } from '@/features/auth/hooks/useAuth'
+import type { LoginRequest } from '@/types/auth'
 
 const loginSchema = z.object({
-  email: z.string().email('Digite um e-mail válido'),
-  password: z.string().min(6, 'A senha precisa ter ao menos 6 caracteres'),
+  tenantId: z.string().min(1, 'ID da clínica obrigatório'),
+  email: z.string().email('E-mail inválido'),
+  senha: z.string().min(6, 'Mínima 6 caracteres'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false)
+  const loginMutation = useLogin()
+
   const { register, handleSubmit, formState } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     mode: 'onTouched',
   })
 
-  const onSubmit = (data: LoginFormValues) => {
-    console.log('login', data)
+  const onSubmit = async (values: LoginFormValues) => {
+    loginMutation.mutate({
+      tenantId: values.tenantId,
+      email: values.email,
+      senha: values.senha,
+    } as LoginRequest)
   }
 
+  const errorMessage = loginMutation.error instanceof Error ? loginMutation.error.message : undefined
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8 shadow-none">
+      <div className="space-y-1">
+        <label htmlFor="tenantId" className="block text-sm font-medium text-text-2">
+          ID da clínica
+        </label>
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:ring-0">
+          <Building2 size={18} className="text-text-3" />
+          <input
+            id="tenantId"
+            type="text"
+            autoComplete="organization"
+            {...register('tenantId')}
+            className="w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
+          />
+        </div>
+        {formState.errors.tenantId ? (
+          <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.tenantId.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <label htmlFor="email" className="block text-sm font-medium text-text-2">
           E-mail
         </label>
-        <input
-          id="email"
-          type="email"
-          {...register('email')}
-          className="mt-2 w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
-        />
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:ring-0">
+          <Mail size={18} className="text-text-3" />
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            {...register('email')}
+            className="w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
+          />
+        </div>
+        {formState.errors.email ? (
+          <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.email.message}</p>
+        ) : null}
       </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+      <div className="space-y-1">
+        <label htmlFor="senha" className="block text-sm font-medium text-text-2">
           Senha
         </label>
-        <input
-          id="password"
-          type="password"
-          {...register('password')}
-          className="mt-2 w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
-      <Button type="submit">Entrar</Button>
-      {formState.errors.email || formState.errors.password ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {formState.errors.email?.message ?? formState.errors.password?.message}
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:ring-0">
+          <input
+            id="senha"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            {...register('senha')}
+            className="w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((current) => !current)}
+            className="text-text-3 transition hover:text-text-1"
+            aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
-      ) : null}
+        {formState.errors.senha ? (
+          <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.senha.message}</p>
+        ) : null}
+      </div>
+      <div className="space-y-3">
+        <Button type="submit" loading={loginMutation.isLoading} className="w-full justify-center">
+          {loginMutation.isLoading ? 'Entrando...' : 'Entrar'}
+        </Button>
+        {errorMessage ? <p className="text-center text-[12px] text-danger">{errorMessage}</p> : null}
+      </div>
     </form>
   )
 }

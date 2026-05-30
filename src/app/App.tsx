@@ -1,18 +1,11 @@
+import { RouterProvider } from 'react-router-dom'
 import { QueryProvider } from './providers/QueryProvider'
-import { AuthProvider } from './providers/AuthProvider'
-import { TenantProvider } from './providers/TenantProvider'
-import { Router } from './Router'
+import { router } from './Router'
 
-function App() {
+export function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <TenantProvider>
-          <Router />
-        </TenantProvider>
-      </AuthProvider>
+      <RouterProvider router={router} />
     </QueryProvider>
   )
 }
-
-export default App
