@@ -1,132 +1,68 @@
 import { api } from '@/lib/axios'
 import type { PaginatedResponse } from '@/types/api'
 import type {
-  MedicalRecord,
-  Evolution,
-  EvolutionRequest,
-  SignEvolutionRequest,
-  Anamnesis,
-  AnamnesisRequest,
-  DiagnosticHypothesis,
-  DiagnosticRequest,
-  PatientDocument,
-  Cid10Result,
+  ProntuarioResponse,
+  CreateProntuarioRequest,
+  UpdateProntuarioRequest,
+  EvolucaoClinicaResponse,
+  CreateEvolucaoRequest,
+  AnamneseResponse,
+  CreateAnamneseRequest,
+  UpdateAnamneseRequest,
 } from '@/types/medical-record'
 
-export async function getMedicalRecordsByPatient(patientId: string): Promise<MedicalRecord[]> {
-  const response = await api.get<MedicalRecord[]>('/medical-records', {
-    params: { patientId },
-  })
+export async function findProntuarioByPatient(patientId: string): Promise<ProntuarioResponse[]> {
+  const response = await api.get<ProntuarioResponse[]>('/prontuarios', { params: { patientId } })
   return response.data
 }
 
-export async function getMedicalRecordById(id: string): Promise<MedicalRecord> {
-  const response = await api.get<MedicalRecord>(`/medical-records/${id}`)
+export async function findProntuarioById(id: string): Promise<ProntuarioResponse> {
+  const response = await api.get<ProntuarioResponse>(`/prontuarios/${id}`)
   return response.data
 }
 
-export async function createMedicalRecord(data: {
-  patientId: string
-  professionalId: string
-  therapeuticGoal: string
-  approach: string
-}): Promise<MedicalRecord> {
-  const response = await api.post<MedicalRecord>('/medical-records', data)
+export async function createProntuario(data: CreateProntuarioRequest): Promise<ProntuarioResponse> {
+  const response = await api.post<ProntuarioResponse>('/prontuarios', data)
   return response.data
 }
 
-export async function closeRecord(id: string): Promise<MedicalRecord> {
-  const response = await api.patch<MedicalRecord>(`/medical-records/${id}/close`)
+export async function updateProntuario(id: string, data: UpdateProntuarioRequest): Promise<ProntuarioResponse> {
+  const response = await api.put<ProntuarioResponse>(`/prontuarios/${id}`, data)
   return response.data
 }
 
-export async function getEvolutions(
-  medicalRecordId: string,
+export async function archiveProntuario(id: string): Promise<ProntuarioResponse> {
+  const response = await api.patch<ProntuarioResponse>(`/prontuarios/${id}/archive`)
+  return response.data
+}
+
+export async function addEvolucao(data: CreateEvolucaoRequest): Promise<EvolucaoClinicaResponse> {
+  const response = await api.post<EvolucaoClinicaResponse>(`/prontuarios/${data.prontuarioId}/evolucoes`, data)
+  return response.data
+}
+
+export async function listEvolucoes(
+  prontuarioId: string,
   params?: { page?: number; size?: number },
-): Promise<PaginatedResponse<Evolution>> {
-  const response = await api.get<PaginatedResponse<Evolution>>(
-    `/medical-records/${medicalRecordId}/evolutions`,
+): Promise<PaginatedResponse<EvolucaoClinicaResponse>> {
+  const response = await api.get<PaginatedResponse<EvolucaoClinicaResponse>>(
+    `/prontuarios/${prontuarioId}/evolucoes`,
     { params },
   )
   return response.data
 }
 
-export async function createEvolution(data: EvolutionRequest): Promise<Evolution> {
-  const response = await api.post<Evolution>(`/medical-records/${data.medicalRecordId}/evolutions`, data)
+export async function createAnamnese(data: CreateAnamneseRequest): Promise<AnamneseResponse> {
+  const response = await api.post<AnamneseResponse>(`/prontuarios/${data.prontuarioId}/anamnese`, data)
   return response.data
 }
 
-export async function signEvolution(
-  medicalRecordId: string,
-  data: SignEvolutionRequest,
-): Promise<Evolution> {
-  const response = await api.post<Evolution>(
-    `/medical-records/${medicalRecordId}/evolutions/${data.evolutionId}/sign`,
-    data,
-  )
+export async function findAnamnese(prontuarioId: string): Promise<AnamneseResponse | null> {
+  const response = await api.get<AnamneseResponse>(`/prontuarios/${prontuarioId}/anamnese`)
   return response.data
 }
 
-export async function getAnamnesis(medicalRecordId: string): Promise<Anamnesis | null> {
-  const response = await api.get<Anamnesis>(`/medical-records/${medicalRecordId}/anamnesis`)
-  return response.data
-}
-
-export async function createOrUpdateAnamnesis(data: AnamnesisRequest): Promise<Anamnesis> {
-  const response = await api.post<Anamnesis>(`/medical-records/${data.medicalRecordId}/anamnesis`, data)
-  return response.data
-}
-
-export async function getDiagnostics(medicalRecordId: string): Promise<DiagnosticHypothesis[]> {
-  const response = await api.get<DiagnosticHypothesis[]>(`/medical-records/${medicalRecordId}/diagnostics`)
-  return response.data
-}
-
-export async function addDiagnostic(data: DiagnosticRequest): Promise<DiagnosticHypothesis> {
-  const response = await api.post<DiagnosticHypothesis>(`/medical-records/${data.medicalRecordId}/diagnostics`, data)
-  return response.data
-}
-
-export async function updateDiagnostic(
-  medicalRecordId: string,
-  diagId: string,
-  status: string,
-): Promise<DiagnosticHypothesis> {
-  const response = await api.patch<DiagnosticHypothesis>(
-    `/medical-records/${medicalRecordId}/diagnostics/${diagId}`,
-    { status },
-  )
-  return response.data
-}
-
-export async function removeDiagnostic(medicalRecordId: string, diagId: string): Promise<void> {
-  await api.delete(`/medical-records/${medicalRecordId}/diagnostics/${diagId}`)
-}
-
-export async function getDocuments(patientId: string): Promise<PatientDocument[]> {
-  const response = await api.get<PatientDocument[]>(`/medical-records/${patientId}/documents`)
-  return response.data
-}
-
-export async function uploadDocument(patientId: string, file: File): Promise<PatientDocument> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await api.post<PatientDocument>(`/medical-records/${patientId}/documents`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-  return response.data
-}
-
-export async function deleteDocument(medicalRecordId: string, docId: string): Promise<void> {
-  await api.delete(`/medical-records/${medicalRecordId}/documents/${docId}`)
-}
-
-export async function searchCid10(query: string): Promise<Cid10Result[]> {
-  const response = await api.get<Cid10Result[]>('/search/cid10', {
-    params: { q: query },
-  })
+export async function updateAnamnese(prontuarioId: string, data: UpdateAnamneseRequest): Promise<AnamneseResponse> {
+  const response = await api.put<AnamneseResponse>(`/prontuarios/${prontuarioId}/anamnese`, data)
   return response.data
 }

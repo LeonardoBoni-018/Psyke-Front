@@ -1,13 +1,12 @@
 import { useAuthStore } from './authStore'
-import type { User } from '@/types/auth'
+import type { UserResponse } from '@/types/auth'
 
-const mockUser: User = {
+const mockUser: UserResponse = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  clinicaId: null,
-  nomeCompleto: 'Dr. Test',
+  fullName: 'Dr. Test',
   email: 'test@psyke.com',
-  roles: ['ROLE_PROFISSIONAL'],
+  roles: ['ROLE_PROFESSIONAL'],
 }
 
 describe('authStore', () => {
@@ -56,15 +55,15 @@ describe('authStore', () => {
 
   it('hasRole returns true when user has the role', () => {
     useAuthStore.getState().setUser(mockUser)
-    expect(useAuthStore.getState().hasRole('ROLE_PROFISSIONAL')).toBe(true)
+    expect(useAuthStore.getState().hasRole('ROLE_PROFESSIONAL')).toBe(true)
   })
 
   it('hasRole returns false when user lacks the role', () => {
     useAuthStore.getState().setUser(mockUser)
-    expect(useAuthStore.getState().hasRole('ROLE_ADMIN_TENANT')).toBe(false)
+    expect(useAuthStore.getState().hasRole('ROLE_ADMIN')).toBe(false)
   })
 
   it('hasRole returns false when user is null', () => {
-    expect(useAuthStore.getState().hasRole('ROLE_PROFISSIONAL')).toBe(false)
+    expect(useAuthStore.getState().hasRole('ROLE_PROFESSIONAL')).toBe(false)
   })
 })

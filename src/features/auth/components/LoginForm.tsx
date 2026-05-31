@@ -10,7 +10,7 @@ import type { LoginRequest } from '@/types/auth'
 const loginSchema = z.object({
   tenantId: z.string().min(1, 'ID da clínica obrigatório'),
   email: z.string().email('E-mail inválido'),
-  senha: z.string().min(6, 'Mínima 6 caracteres'),
+  password: z.string().min(6, 'Mínima 6 caracteres'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -28,7 +28,7 @@ export function LoginForm() {
     loginMutation.mutate({
       tenantId: values.tenantId,
       email: values.email,
-      senha: values.senha,
+      password: values.password,
     } as LoginRequest)
   }
 
@@ -78,10 +78,10 @@ export function LoginForm() {
         </label>
         <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:ring-0">
           <input
-            id="senha"
+            id="password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
-            {...register('senha')}
+            {...register('password')}
             className="w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
           />
           <button
@@ -93,8 +93,8 @@ export function LoginForm() {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {formState.errors.senha ? (
-          <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.senha.message}</p>
+        {formState.errors.password ? (
+          <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.password.message}</p>
         ) : null}
       </div>
       <div className="space-y-3">

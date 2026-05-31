@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Clock,
   Users,
-  FileText,
   DollarSign,
   BarChart2,
   UserCheck,
@@ -19,7 +18,6 @@ const navItems = [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
       { label: 'Agenda', icon: Clock, path: '/agenda', badge: '4' },
       { label: 'Pacientes', icon: Users, path: '/patients' },
-      { label: 'Prontuários', icon: FileText, path: '/medical-records' },
     ],
   },
   {
@@ -45,8 +43,8 @@ function getInitials(nomeCompleto: string): string {
 export function Sidebar() {
   const user = useAuthStore((state) => state.user)
 
-  const userInitials = useMemo(() => getInitials(user?.nomeCompleto ?? 'Dra. Ana Silva'), [user])
-  const userName = user?.nomeCompleto ?? 'Dra. Ana Silva'
+  const userInitials = useMemo(() => getInitials(user?.fullName ?? 'Dra. Ana Silva'), [user])
+  const userName = user?.fullName ?? 'Dra. Ana Silva'
   const userRole = user?.crp ?? 'CRP 06/12345'
 
   return (

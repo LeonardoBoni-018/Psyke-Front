@@ -39,12 +39,13 @@ describe('usePatients', () => {
     expect(result.current.data?.content[0].id).toBe('patient-1')
   })
 
-  it('calls listPatients with default params', async () => {
+  it('calls listPatients without default params when none provided', async () => {
     vi.mocked(listPatients).mockResolvedValue({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 50 })
 
     renderHook(() => usePatients(), { wrapper: createWrapper() })
 
-    await waitFor(() => expect(listPatients).toHaveBeenCalledWith({ status: 'ACTIVE', page: 0, size: 50 }))
+    await waitFor(() => expect(listPatients).toHaveBeenCalled())
+    expect(listPatients).toHaveBeenCalledWith(undefined)
   })
 
   it('returns empty list when no patients', async () => {

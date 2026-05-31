@@ -1,16 +1,9 @@
-export type UserRole =
-  | 'ROLE_SUPER_ADMIN'
-  | 'ROLE_ADMIN_TENANT'
-  | 'ROLE_ADMIN_CLINICA'
-  | 'ROLE_PROFISSIONAL'
-  | 'ROLE_RECEPCIONISTA'
-  | 'ROLE_PACIENTE'
+export type UserRole = 'ROLE_ADMIN' | 'ROLE_PROFESSIONAL' | 'ROLE_PATIENT' | 'ROLE_RECEPTIONIST'
 
-export interface User {
+export interface UserResponse {
   id: string
   tenantId: string
-  clinicaId: string | null
-  nomeCompleto: string
+  fullName: string
   email: string
   roles: UserRole[]
   crp?: string
@@ -19,7 +12,7 @@ export interface User {
 export interface LoginRequest {
   tenantId: string
   email: string
-  senha: string
+  password: string
 }
 
 export interface TokenResponse {
@@ -28,10 +21,23 @@ export interface TokenResponse {
   tokenType: string
   expiresIn: number
   userId: string
-  nomeCompleto: string
+  fullName: string
   roles: UserRole[]
 }
 
 export interface RefreshRequest {
   refreshToken: string
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
+export interface VerifyEmailRequest {
+  token: string
 }

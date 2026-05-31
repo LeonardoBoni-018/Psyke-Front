@@ -1,18 +1,6 @@
-export type PatientStatus = 'ACTIVE' | 'INACTIVE' | 'WAITING' | 'DISCHARGED'
-export type Gender = 'MALE' | 'FEMALE' | 'NON_BINARY' | 'OTHER' | 'PREFER_NOT_TO_SAY'
-export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED' | 'OTHER'
+import type { PatientStatus, Gender, MaritalStatus } from './status'
 
-export interface PatientAddress {
-  street: string
-  number: string
-  complement?: string
-  neighborhood: string
-  city: string
-  state: string
-  zipCode: string
-}
-
-export interface Patient {
+export interface PatientResponse {
   id: string
   fullName: string
   birthDate: string
@@ -21,18 +9,19 @@ export interface Patient {
   cpf: string
   phone: string
   email: string
-  profession?: string
-  address: PatientAddress
+  occupation?: string
   insurance?: string
   insuranceNumber?: string
-  professionalId: string
+  referredBy?: string
   status: PatientStatus
   notes?: string
+  firstAppointment?: string
+  lastAppointment?: string
   createdAt: string
   updatedAt: string
 }
 
-export interface PatientRequest {
+export interface CreatePatientRequest {
   fullName: string
   birthDate: string
   gender: Gender
@@ -40,13 +29,14 @@ export interface PatientRequest {
   cpf: string
   phone: string
   email: string
-  profession?: string
-  address: PatientAddress
+  occupation?: string
   insurance?: string
   insuranceNumber?: string
-  professionalId: string
+  referredBy?: string
   notes?: string
 }
+
+export type UpdatePatientRequest = Partial<CreatePatientRequest>
 
 export interface PatientListItem {
   id: string

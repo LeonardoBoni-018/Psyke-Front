@@ -19,8 +19,7 @@ export function useLogin() {
       setUser({
         id: data.userId,
         tenantId: data.tenantId,
-        clinicaId: null,
-        nomeCompleto: data.nomeCompleto,
+        fullName: data.fullName,
         email: data.email,
         roles: data.roles,
       })

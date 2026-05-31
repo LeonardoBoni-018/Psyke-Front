@@ -15,6 +15,9 @@ const FinancialPage = lazy(() => import('@/features/financial/pages/FinancialPag
 const ProfessionalsPage = lazy(() => import('@/features/professionals/pages/ProfessionalsPage'))
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'))
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'))
+const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'))
+const EmailVerificationPage = lazy(() => import('@/features/auth/pages/EmailVerificationPage'))
 
 function SuspendedPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
@@ -34,6 +37,18 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <SuspendedPage><ForgotPasswordPage /></SuspendedPage>,
+  },
+  {
+    path: '/reset-password',
+    element: <SuspendedPage><ResetPasswordPage /></SuspendedPage>,
+  },
+  {
+    path: '/verify-email',
+    element: <SuspendedPage><EmailVerificationPage /></SuspendedPage>,
   },
   {
     path: '/',

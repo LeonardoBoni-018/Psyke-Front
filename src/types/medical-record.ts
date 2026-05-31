@@ -1,117 +1,88 @@
-export type RecordStatus = 'OPEN' | 'CLOSED' | 'SUSPENDED'
-export type DiagnosticStatus = 'HYPOTHESIS' | 'CONFIRMED' | 'RULED_OUT'
+import type { RecordStatus } from './status'
 
-export interface MedicalRecord {
+export interface ProntuarioResponse {
   id: string
   patientId: string
   professionalId: string
-  therapeuticGoal: string
-  approach: string
+  allergies: string
+  chronicConditions: string
+  medications: string
+  notes: string
   status: RecordStatus
-  startDate: string
-  endDate?: string
-  sessionCount: number
-  lastSessionDate?: string
-  generalNotes?: string
   createdAt: string
   updatedAt: string
 }
 
-export interface Evolution {
+export interface CreateProntuarioRequest {
+  patientId: string
+  professionalId: string
+  allergies?: string
+  chronicConditions?: string
+  medications?: string
+  notes?: string
+}
+
+export interface UpdateProntuarioRequest {
+  allergies?: string
+  chronicConditions?: string
+  medications?: string
+  notes?: string
+}
+
+export interface EvolucaoClinicaResponse {
   id: string
-  medicalRecordId: string
+  prontuarioId: string
   professionalId: string
   sessionDate: string
-  content: string
-  interventions: string
-  clinicalEvolution: string
-  homework?: string
-  tags?: string[]
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+  techniques: string[]
   signed: boolean
-  signatureHash?: string
   createdAt: string
 }
 
-export interface EvolutionRequest {
-  medicalRecordId: string
+export interface CreateEvolucaoRequest {
+  prontuarioId: string
   sessionDate: string
-  content: string
-  interventions: string
-  clinicalEvolution: string
-  homework?: string
-  tags?: string[]
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+  techniques?: string[]
 }
 
-export interface SignEvolutionRequest {
-  evolutionId: string
-  password: string
-}
-
-export interface Anamnesis {
+export interface AnamneseResponse {
   id: string
-  medicalRecordId: string
+  prontuarioId: string
   chiefComplaint: string
-  currentIllnessHistory: string
+  history: string
   familyHistory: string
   personalHistory: string
-  currentMedications: string
+  medications: string
   sleepPattern: string
   substanceUse: string
-  suicideAttempts: string
-  relevantTraumas: string
+  suicideRisk: string
+  traumaHistory: string
   socialSupport: string
   developmentalHistory?: string
   updatedAt: string
 }
 
-export interface AnamnesisRequest {
-  medicalRecordId: string
+export interface CreateAnamneseRequest {
+  prontuarioId: string
   chiefComplaint: string
-  currentIllnessHistory: string
+  history: string
   familyHistory: string
   personalHistory: string
-  currentMedications: string
+  medications: string
   sleepPattern: string
   substanceUse: string
-  suicideAttempts: string
-  relevantTraumas: string
+  suicideRisk: string
+  traumaHistory: string
   socialSupport: string
   developmentalHistory?: string
 }
 
-export interface DiagnosticHypothesis {
-  id: string
-  medicalRecordId: string
-  cid10Code: string
-  description: string
-  dsm5Code?: string
-  status: DiagnosticStatus
-  notes?: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface DiagnosticRequest {
-  medicalRecordId: string
-  cid10Code: string
-  description: string
-  dsm5Code?: string
-  status: DiagnosticStatus
-  notes?: string
-}
-
-export interface PatientDocument {
-  id: string
-  medicalRecordId: string
-  fileName: string
-  fileType: string
-  fileSize: number
-  uploadedAt: string
-  uploadedBy: string
-}
-
-export interface Cid10Result {
-  code: string
-  description: string
-  category: string
-}
+export type UpdateAnamneseRequest = Partial<CreateAnamneseRequest>

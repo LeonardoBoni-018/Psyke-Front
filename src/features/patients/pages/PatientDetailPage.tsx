@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, FileText, DollarSign, Calendar, Mail, Phone, MapPin, User, CreditCard } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Calendar, Mail, Phone, User, CreditCard } from 'lucide-react'
 import { usePatient } from '@/features/patients/hooks/usePatient'
-import type { Gender, MaritalStatus, PatientStatus } from '@/types/patient'
+import type { PatientStatus } from '@/types/status'
 
 const statusConfig: Record<PatientStatus, { label: string; className: string }> = {
   ACTIVE: { label: 'Ativo', className: 'bg-teal/15 text-teal' },
@@ -12,7 +12,7 @@ const statusConfig: Record<PatientStatus, { label: string; className: string }> 
   DISCHARGED: { label: 'Alta', className: 'bg-info/15 text-info' },
 }
 
-const genderLabels: Record<Gender, string> = {
+const genderLabels: Record<string, string> = {
   MALE: 'Masculino',
   FEMALE: 'Feminino',
   NON_BINARY: 'Não-binário',
@@ -20,7 +20,7 @@ const genderLabels: Record<Gender, string> = {
   PREFER_NOT_TO_SAY: 'Prefere não informar',
 }
 
-const maritalStatusLabels: Record<MaritalStatus, string> = {
+const maritalStatusLabels: Record<string, string> = {
   SINGLE: 'Solteiro(a)',
   MARRIED: 'Casado(a)',
   DIVORCED: 'Divorciado(a)',
@@ -118,9 +118,8 @@ export default function PatientDetailPage() {
               <InfoRow icon={User} label="Estado civil" value={maritalStatusLabels[patient.maritalStatus]} />
               <InfoRow icon={Mail} label="E-mail" value={patient.email} />
               <InfoRow icon={Phone} label="Telefone" value={patient.phone} />
-              <InfoRow icon={MapPin} label="Endereço" value={`${patient.address.street}, ${patient.address.number} · ${patient.address.city}, ${patient.address.state}`} />
               <InfoRow icon={CreditCard} label="CPF" value={patient.cpf} />
-              {patient.profession && <InfoRow icon={Calendar} label="Profissão" value={patient.profession} />}
+              {patient.occupation && <InfoRow icon={Calendar} label="Profissão" value={patient.occupation} />}
               {patient.insurance && (
                 <InfoRow icon={CreditCard} label="Convênio" value={`${patient.insurance}${patient.insuranceNumber ? ` (${patient.insuranceNumber})` : ''}`} />
               )}

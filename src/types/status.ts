@@ -1,0 +1,5 @@
+export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'CANCELLED' | 'NO_SHOW' | 'DONE'
+export type PatientStatus = 'ACTIVE' | 'INACTIVE' | 'WAITING' | 'DISCHARGED'
+export type Gender = 'MALE' | 'FEMALE' | 'NON_BINARY' | 'OTHER' | 'PREFER_NOT_TO_SAY'
+export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED' | 'OTHER'
+export type RecordStatus = 'ACTIVE' | 'ARCHIVED'
