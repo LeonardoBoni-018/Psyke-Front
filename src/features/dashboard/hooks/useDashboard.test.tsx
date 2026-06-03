@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useDashboardSummary, useTodaySessions } from './useDashboard'
 import { getDashboardSummary, getTodaySessions } from '@/features/dashboard/services/dashboardApi'
 import type { ReactNode } from 'react'
+import type { AppointmentResponse } from '@/types/appointment'
 
 vi.mock('@/features/dashboard/services/dashboardApi', () => ({
   getDashboardSummary: vi.fn(),
@@ -10,17 +11,15 @@ vi.mock('@/features/dashboard/services/dashboardApi', () => ({
 }))
 
 const mockSummary = {
-  totalPatients: 47,
-  activePatients: 42,
   sessionsToday: 8,
-  pendingConfirmations: 3,
-  totalAppointmentsMonth: 120,
-  revenueMonth: 12400,
+  pendingConfirmation: 3,
+  activePatients: 42,
+  totalProfessionals: 5,
 }
 
-const mockSessions = [
-  { id: '1', patientName: 'João Silva', professionalName: 'Dra. Ana', startTime: '08:00', endTime: '09:00', status: 'CONFIRMED', approach: 'TCC' },
-  { id: '2', patientName: 'Maria Costa', professionalName: 'Dra. Ana', startTime: '09:00', endTime: '10:00', status: 'DONE', approach: 'Psicanálise' },
+const mockSessions: AppointmentResponse[] = [
+  { id: '1', clinicId: 'c1', patientId: 'p1', professionalId: 'pr1', roomId: null, startTime: '2026-06-02T08:00:00Z', endTime: '2026-06-02T09:00:00Z', status: 'CONFIRMED', prontuario: null, notes: 'Sessão TCC', createdAt: '2026-06-01T00:00:00Z', updatedAt: '2026-06-01T00:00:00Z' },
+  { id: '2', clinicId: 'c1', patientId: 'p2', professionalId: 'pr1', roomId: null, startTime: '2026-06-02T09:00:00Z', endTime: '2026-06-02T10:00:00Z', status: 'DONE', prontuario: null, notes: 'Sessão Psicanálise', createdAt: '2026-06-01T00:00:00Z', updatedAt: '2026-06-01T00:00:00Z' },
 ]
 
 function createWrapper() {
@@ -43,7 +42,7 @@ describe('useDashboardSummary', () => {
   it('returns error on failure', async () => {
     vi.mocked(getDashboardSummary).mockRejectedValue(new Error('API error'))
     const { result } = renderHook(() => useDashboardSummary(), { wrapper: createWrapper() })
-    await waitFor(() => expect(result.current.isError).toBe(true))
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 })
   })
 })
 

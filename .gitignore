@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Embedded git repos
+docs/psyke_extracted/psyke

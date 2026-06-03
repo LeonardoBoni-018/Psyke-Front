@@ -1,30 +1,30 @@
 import { api } from '@/lib/axios'
+import type { AppointmentResponse } from '@/types/appointment'
 
 export interface DashboardSummary {
-  totalPatients: number
-  activePatients: number
   sessionsToday: number
-  pendingConfirmations: number
-  totalAppointmentsMonth: number
-  revenueMonth: number
+  pendingConfirmation: number
+  activePatients: number
+  totalProfessionals: number
+  paidInvoicesCount?: number
+  pendingInvoicesCount?: number
 }
 
-export interface TodaySession {
-  id: string
-  patientName: string
-  professionalName: string
-  startTime: string
-  endTime: string
-  status: string
-  approach?: string
+export const dashboardApi = {
+  getSummary: () =>
+    api.get<DashboardSummary>('/dashboard').then((r) => r.data),
+
+  getTodaySessions: () => {
+    const today = new Date()
+    const from = new Date(today)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(today)
+    to.setHours(23, 59, 59, 999)
+    return api.get<AppointmentResponse[]>('/appointments', {
+      params: { from: from.toISOString(), to: to.toISOString() },
+    }).then((r) => r.data)
+  },
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const response = await api.get<DashboardSummary>('/dashboard/summary')
-  return response.data
-}
-
-export async function getTodaySessions(): Promise<TodaySession[]> {
-  const response = await api.get<TodaySession[]>('/dashboard/today-sessions')
-  return response.data
-}
+export const getDashboardSummary = dashboardApi.getSummary
+export const getTodaySessions = dashboardApi.getTodaySessions

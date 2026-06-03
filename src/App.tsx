@@ -4,6 +4,10 @@ import { AuthProvider } from './app/providers/AuthProvider'
 import { TenantProvider } from './app/providers/TenantProvider'
 import { router } from './app/Router'
 
+if (import.meta.env.DEV) {
+  import('@/scripts/index')
+}
+
 function App() {
   return (
     <QueryProvider>
