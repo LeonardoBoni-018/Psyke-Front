@@ -1,6 +1,6 @@
 export type UserRole =
-  | 'ROLE_SUPER_ADMIN' | 'ROLE_ADMIN_TENANT' | 'ROLE_ADMIN_CLINIC'
-  | 'ROLE_PROFESSIONAL' | 'ROLE_RECEPTIONIST' | 'ROLE_PATIENT'
+  | 'ROLE_ADMIN' | 'ROLE_PROFESSIONAL' | 'ROLE_PATIENT'
+  | 'ROLE_RECEPTIONIST' | 'ROLE_USER'
 
 export interface UserResponse {
   id: string
@@ -10,6 +10,7 @@ export interface UserResponse {
   cpf?: string
   phone?: string
   active: boolean
+  emailVerified?: boolean
   roles: UserRole[]
   crp?: string
   createdAt: string
@@ -27,7 +28,7 @@ export interface TokenResponse {
   tokenType: string
   expiresIn: number
   userId: string
-  fullName: string
+  name: string
   roles: UserRole[]
 }
 

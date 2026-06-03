@@ -62,7 +62,7 @@ describe('authStore', () => {
 
   it('hasRole returns false when user lacks the role', () => {
     useAuthStore.getState().setUser(mockUser)
-    expect(useAuthStore.getState().hasRole('ROLE_ADMIN_TENANT')).toBe(false)
+    expect(useAuthStore.getState().hasRole('ROLE_ADMIN')).toBe(false)
   })
 
   it('hasRole returns false when user is null', () => {
