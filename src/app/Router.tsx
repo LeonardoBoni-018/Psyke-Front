@@ -2,7 +2,7 @@
 import { Suspense, lazy, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout/AppLayout'
-import { LoginPage } from '@/features/auth/pages/LoginPage'
+import LoginPage from '@/features/auth/pages/LoginPage'
 import { PageSkeleton } from '@/components/shared/LoadingSkeleton/PageSkeleton'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
@@ -77,6 +77,10 @@ export const router = createBrowserRouter([
       },
       {
         path: 'patients/:id/record',
+        element: <SuspendedPage><MedicalRecordsPage /></SuspendedPage>,
+      },
+      {
+        path: 'medical-records/:id',
         element: <SuspendedPage><MedicalRecordsPage /></SuspendedPage>,
       },
       {

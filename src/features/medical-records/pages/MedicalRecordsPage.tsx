@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, FileText, Plus, Disk, Archive, Check, AlertCircle } from 'lucide-react'
+import { ArrowLeft, FileText, Plus, Save, Archive, Check, AlertCircle } from 'lucide-react'
 import { usePatient } from '@/features/patients/hooks/usePatient'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import {
@@ -82,7 +82,7 @@ function SubmitButton({ loading, children }: { loading: boolean; children: React
       {loading ? (
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
       ) : (
-        <Disk size={15} />
+        <Save size={15} />
       )}
       {children}
     </button>

@@ -1,4 +1,4 @@
-import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { RefreshRequest, TokenResponse } from '@/types/auth'
 
@@ -27,7 +27,7 @@ const processQueue = (error: unknown, response?: AxiosResponse<unknown>) => {
   failedQueue = []
 }
 
-api.interceptors.request.use((config: AxiosRequestConfig) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const { token, tenantId } = useAuthStore.getState()
 
   if (token && config.headers) {
@@ -44,7 +44,7 @@ api.interceptors.request.use((config: AxiosRequestConfig) => {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true

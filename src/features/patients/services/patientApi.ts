@@ -1,6 +1,7 @@
 import { api } from '@/lib/axios'
 import type { PaginatedResponse } from '@/types/api'
-import type { PatientResponse, PatientListItem, CreatePatientRequest, UpdatePatientRequest, PatientStatus } from '@/types/patient'
+import type { PatientStatus } from '@/types/status'
+import type { PatientResponse, PatientListItem, CreatePatientRequest, UpdatePatientRequest } from '@/types/patient'
 
 interface PatientListParams {
   status?: PatientStatus

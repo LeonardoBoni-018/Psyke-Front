@@ -7,6 +7,8 @@ const mockUser: UserResponse = {
   fullName: 'Dr. Test',
   email: 'test@psyke.com',
   roles: ['ROLE_PROFESSIONAL'],
+  active: true,
+  createdAt: '2026-01-01T00:00:00Z',
 }
 
 describe('authStore', () => {
@@ -60,7 +62,7 @@ describe('authStore', () => {
 
   it('hasRole returns false when user lacks the role', () => {
     useAuthStore.getState().setUser(mockUser)
-    expect(useAuthStore.getState().hasRole('ROLE_ADMIN')).toBe(false)
+    expect(useAuthStore.getState().hasRole('ROLE_ADMIN_TENANT')).toBe(false)
   })
 
   it('hasRole returns false when user is null', () => {

@@ -11,7 +11,15 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
-const navItems = [
+interface NavItem {
+  label: string
+  icon: typeof LayoutDashboard
+  path: string
+  badge?: string
+  badgeWarning?: boolean
+}
+
+const navItems: { section: string; items: NavItem[] }[] = [
   {
     section: 'Principal',
     items: [

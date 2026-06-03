@@ -98,8 +98,8 @@ export function LoginForm() {
         ) : null}
       </div>
       <div className="space-y-3">
-        <Button type="submit" loading={loginMutation.isLoading} className="w-full justify-center">
-          {loginMutation.isLoading ? 'Entrando...' : 'Entrar'}
+        <Button type="submit" loading={loginMutation.isPending} className="w-full justify-center">
+          {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
         {errorMessage ? <p className="text-center text-[12px] text-danger">{errorMessage}</p> : null}
       </div>

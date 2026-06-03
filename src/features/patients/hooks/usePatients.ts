@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { listPatients } from '@/features/patients/services/patientApi'
-import type { PatientStatus } from '@/types/patient'
+import type { PatientStatus } from '@/types/status'
 
 export const PATIENTS_LIST_KEY = ['patients', 'list'] as const
 

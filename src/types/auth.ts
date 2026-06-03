@@ -1,12 +1,18 @@
-export type UserRole = 'ROLE_ADMIN' | 'ROLE_PROFESSIONAL' | 'ROLE_PATIENT' | 'ROLE_RECEPTIONIST'
+export type UserRole =
+  | 'ROLE_SUPER_ADMIN' | 'ROLE_ADMIN_TENANT' | 'ROLE_ADMIN_CLINIC'
+  | 'ROLE_PROFESSIONAL' | 'ROLE_RECEPTIONIST' | 'ROLE_PATIENT'
 
 export interface UserResponse {
   id: string
   tenantId: string
   fullName: string
   email: string
+  cpf?: string
+  phone?: string
+  active: boolean
   roles: UserRole[]
   crp?: string
+  createdAt: string
 }
 
 export interface LoginRequest {

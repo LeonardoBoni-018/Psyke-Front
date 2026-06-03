@@ -1,33 +1,188 @@
-import { LoginForm } from '../components/LoginForm'
+import { useState, cloneElement } from 'react'
+import type { ReactNode, ReactElement, CSSProperties } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Eye, EyeOff, Loader2, Building2, Mail, Lock } from 'lucide-react'
+import { useLogin } from '../hooks/useAuth'
 
-export function LoginPage() {
+const schema = z.object({
+  tenantId: z.string().min(1, 'ID da clínica obrigatório'),
+  email: z.string().email('E-mail inválido'),
+  password: z.string().min(6, 'Mínimo 6 caracteres'),
+})
+
+type FormData = z.infer<typeof schema>
+
+interface FieldProps {
+  label: string
+  icon?: ReactNode
+  iconRight?: ReactNode
+  error?: string
+  children: ReactElement<{ className?: string; style?: CSSProperties }>
+}
+
+function Field({ label, icon, iconRight, error, children }: FieldProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,196,160,0.08),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(74,158,255,0.08),transparent_24%)] px-4 py-10">
-      <div className="mx-auto flex w-full max-w-[1100px] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-bg-1 shadow-none">
-        <aside className="hidden w-[40%] flex-col border-r border-border bg-bg-1 p-10 text-text-1 lg:flex">
-          <div className="flex h-full flex-col justify-between">
-            <div className="space-y-6">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-[var(--radius-lg)] bg-teal text-bg-0 font-serif text-4xl italic">
-                ψ
-              </div>
-              <div className="space-y-2">
-                <h1 className="font-serif text-4xl text-text-1">Psyke</h1>
-                <p className="text-sm text-text-2">Clinic OS</p>
-              </div>
-            </div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-text-3">Powered by Psyke Platform</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{
+        fontFamily: 'var(--font-mono)', fontSize: 10,
+        color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase',
+      }}>
+        {label}
+      </label>
+      <div style={{ position: 'relative' }}>
+        {icon && (
+          <span style={{
+            position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+            color: 'var(--text-3)', pointerEvents: 'none', display: 'flex',
+          }}>
+            {icon}
+          </span>
+        )}
+        {cloneElement(children, {
+          className: 'psyke-input',
+          style: {
+            paddingLeft: icon ? '34px' : '12px',
+            paddingRight: iconRight ? '36px' : '12px',
+          },
+        })}
+        {iconRight && (
+          <span style={{
+            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+          }}>
+            {iconRight}
+          </span>
+        )}
+      </div>
+      {error && (
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--danger)' }}>
+          {error}
+        </span>
+      )}
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  const [showPass, setShowPass] = useState(false)
+  const { mutate: login, isPending } = useLogin()
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  })
+
+  return (
+    <div style={{
+      display: 'flex', height: '100vh', background: 'var(--bg-0)',
+      backgroundImage: `
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px)
+      `,
+      backgroundSize: '40px 40px',
+    }}>
+      <div style={{
+        width: '42%', display: 'flex', flexDirection: 'column',
+        justifyContent: 'center', padding: '60px',
+        background: 'rgba(13, 19, 24, 0.95)',
+        borderRight: '1px solid var(--border)',
+      }}>
+        <div style={{ marginBottom: 40 }}>
+          <div style={{
+            width: 52, height: 52, background: 'var(--teal)',
+            borderRadius: 12, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', marginBottom: 24,
+          }}>
+            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontStyle: 'italic', color: 'var(--bg-0)' }}>ψ</span>
           </div>
-        </aside>
-        <main className="w-full p-8 sm:p-10 lg:w-[60%]">
-          <div className="mx-auto max-w-md space-y-6">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-text-3">Acesso à clínica</p>
-              <h2 className="mt-3 text-3xl font-serif text-text-1">Entrar no Psyke</h2>
-              <p className="mt-2 text-sm text-text-2">Use seu ID da clínica, e-mail e senha para continuar.</p>
-            </div>
-            <LoginForm />
-          </div>
-        </main>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 48, color: 'var(--text-1)', lineHeight: 1.1, marginBottom: 12 }}>
+            Psyke
+          </h1>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            Clinic OS — v2.0
+          </p>
+        </div>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.8, maxWidth: 320 }}>
+          Sistema de gestão clínica para psicólogos e clínicas de psicologia.
+          Prontuários, agenda, financeiro e muito mais.
+        </p>
+        <div style={{ marginTop: 48, display: 'flex', gap: 8 }}>
+          {['Prontuário', 'Agenda', 'LGPD'].map((tag) => (
+            <span key={tag} style={{
+              fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 10px',
+              borderRadius: 20, background: 'rgba(14,196,160,0.1)',
+              border: '1px solid rgba(14,196,160,0.2)', color: 'var(--teal)',
+            }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <div style={{
+          width: '100%', maxWidth: 420,
+          background: 'var(--bg-1)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)', padding: '40px',
+        }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, color: 'var(--text-1)', marginBottom: 8 }}>
+            Entrar
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 32 }}>
+            Acesse sua clínica com suas credenciais
+          </p>
+
+          <style>{`
+            .psyke-input {
+              width: 100%; background: var(--bg-2); border: 1px solid var(--border);
+              border-radius: var(--radius-md); padding: 9px 12px;
+              font-family: var(--font-sans); font-size: 13px; color: var(--text-1);
+              outline: none; transition: border-color 150ms, box-shadow 150ms;
+            }
+            .psyke-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-10); }
+            .psyke-input::placeholder { color: var(--text-3); }
+          `}</style>
+
+          <form onSubmit={handleSubmit((d) => login(d))} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Field label="ID da clínica" icon={<Building2 size={15} />} error={errors.tenantId?.message}>
+              <input {...register('tenantId')} placeholder="ex: demo" />
+            </Field>
+            <Field label="E-mail" icon={<Mail size={15} />} error={errors.email?.message}>
+              <input {...register('email')} type="email" placeholder="seu@email.com" />
+            </Field>
+            <Field
+              label="Senha"
+              icon={<Lock size={15} />}
+              error={errors.password?.message}
+              iconRight={
+                <button type="button" onClick={() => setShowPass(!showPass)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex' }}>
+                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              }
+            >
+              <input {...register('password')} type={showPass ? 'text' : 'password'} placeholder="••••••••" />
+            </Field>
+
+            <button type="submit" disabled={isPending} style={{
+              marginTop: 8, padding: '10px 20px',
+              background: 'var(--teal)', color: 'var(--bg-0)',
+              border: 'none', borderRadius: 'var(--radius-md)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
+              cursor: isPending ? 'not-allowed' : 'pointer',
+              opacity: isPending ? 0.7 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              transition: 'all 150ms',
+            }}>
+              {isPending && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
+              {isPending ? 'Entrando...' : 'Entrar'}
+            </button>
+
+            <a href="#" style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', marginTop: 4 }}
+              onClick={(e) => e.preventDefault()}>
+              Esqueceu a senha?
+            </a>
+          </form>
+        </div>
       </div>
     </div>
   )

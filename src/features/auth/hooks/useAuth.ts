@@ -22,6 +22,8 @@ export function useLogin() {
         fullName: data.fullName,
         email: data.email,
         roles: data.roles,
+        active: true,
+        createdAt: new Date().toISOString(),
       })
       navigate('/dashboard', { replace: true })
     },
