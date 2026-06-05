@@ -449,7 +449,7 @@ export default function DashboardPage() {
               {[
                 { icon: <CalendarPlus size={16} />, label: 'Agendar sessão', desc: 'Criar novo agendamento com slot disponível',                 path: '/agenda/new', accent: 'var(--teal)' },
                 { icon: <UserPlus size={16} />, label: 'Novo paciente', desc: 'Cadastrar paciente e abrir prontuário', path: '/patients/new', accent: 'var(--info)' },
-                { icon: <Search size={16} />, label: 'Buscar prontuário', desc: 'Acessar evoluções e anamnese', path: '/medical-records', accent: 'var(--amber)' },
+                { icon: <Search size={16} />, label: 'Buscar prontuário', desc: 'Acessar evoluções e anamnese', path: '/patients', accent: 'var(--amber)' },
               ].map((card, i) => (
                 <div key={card.label} className="item-enter" style={{ flex: 1, animationDelay: `${i * 50}ms` }}>
                   <ActionCard
