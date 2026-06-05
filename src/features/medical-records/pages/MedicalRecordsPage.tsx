@@ -99,7 +99,7 @@ export default function MedicalRecordsPage() {
     refetch: refetchProntuarios,
   } = useProntuarioByPatient(id!)
 
-  const prontuario: ProntuarioResponse | null = prontuarios?.[0] ?? null
+  const prontuario: ProntuarioResponse | null = prontuarios ?? null
 
   const {
     data: evolucoesData,

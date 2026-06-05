@@ -12,12 +12,12 @@ import type {
   UpdateAnamneseRequest,
 } from '@/types/medical-record'
 
-export async function findProntuarioByPatient(patientId: string): Promise<ProntuarioResponse[]> {
+export async function findProntuarioByPatient(patientId: string): Promise<ProntuarioResponse | null> {
   try {
-    const response = await api.get<ProntuarioResponse[]>(`/prontuarios/patient/${patientId}`)
+    const response = await api.get<ProntuarioResponse>(`/prontuarios/patient/${patientId}`)
     return response.data
   } catch (err) {
-    if (isAxiosError(err) && err.response?.status === 404) return []
+    if (isAxiosError(err) && err.response?.status === 404) return null
     throw err
   }
 }
