@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Plus, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { User, Plus, CheckCircle, XCircle, RefreshCw, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { useProfessionals } from '@/features/professionals/hooks/useProfessionals'
 import type { ProfessionalResponse } from '@/types/professional'
 
 function ProfessionalCard({ professional }: { professional: ProfessionalResponse }) {
+  const navigate = useNavigate()
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -51,7 +53,9 @@ function ProfessionalCard({ professional }: { professional: ProfessionalResponse
             {professional.active ? 'Ativo' : 'Inativo'}
           </span>
         </div>
-        <button type="button" className="text-[12px] text-teal transition hover:text-teal/80">Editar</button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/professionals/${professional.id}/edit`)}>
+          Editar
+        </Button>
       </div>
       {expanded && (
         <div className="mt-4 border-t border-border pt-4 text-sm text-text-2 space-y-1">
@@ -68,7 +72,7 @@ export default function ProfessionalsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="page-enter space-y-6">
         <div className="flex items-center justify-between">
           <div className="h-8 w-44 rounded-lg bg-bg-2 animate-shimmer" />
           <div className="h-10 w-40 rounded-xl bg-bg-2 animate-shimmer" />
@@ -103,15 +107,12 @@ export default function ProfessionalsPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-text-3">Erro ao carregar profissionais</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-bg-2 px-4 py-2 text-sm text-text-2 transition hover:border-border-hi"
-        >
+      <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+        <AlertCircle size={22} className="text-text-3 opacity-50" />
+        <p className="text-sm text-text-3">Erro ao carregar profissionais</p>
+        <Button variant="ghost" onClick={() => refetch()}>
           <RefreshCw size={14} /> Tentar novamente
-        </button>
+        </Button>
       </div>
     )
   }
@@ -120,21 +121,26 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif text-text-1">Profissionais</h1>
-        <button
-          type="button"
-          onClick={() => navigate('/professionals/new')}
-          className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90"
-        >
-          <Plus size={16} /> Novo profissional
-        </button>
+      <div className="flex items-start gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+        <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
+          <User size={20} />
+        </div>
+        <div className="flex flex-1 items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-serif text-text-1">Profissionais</h1>
+            <p className="mt-1 text-sm text-text-3">Gerencie os profissionais da clínica</p>
+          </div>
+          <Button onClick={() => navigate('/professionals/new')}>
+            <Plus size={16} /> Novo profissional
+          </Button>
+        </div>
       </div>
 
       {professionals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-20">
-          <p className="text-text-3">Nenhum profissional encontrado</p>
-          <p className="mt-1 text-[12px] text-text-3">Clique em "Novo profissional" para cadastrar</p>
+        <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-20 gap-3">
+          <User size={22} className="text-text-3 opacity-50" />
+          <p className="text-sm text-text-3">Nenhum profissional encontrado</p>
+          <p className="text-[12px] text-text-3">Clique em "Novo profissional" para cadastrar</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
