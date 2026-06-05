@@ -8,14 +8,11 @@ import {
   useReactTable,
   createColumnHelper,
 } from '@tanstack/react-table'
-import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Plus, ChevronLeft, ChevronRight, Users, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { usePatients } from '@/features/patients/hooks/usePatients'
 import type { PatientResponse } from '@/types/patient'
-
-const statusConfig: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: 'Ativo', className: 'bg-teal/15 text-teal' },
-  INACTIVE: { label: 'Inativo', className: 'bg-text-3/10 text-text-3' },
-}
 
 const statusOptions = [
   { value: '', label: 'Todos' },
@@ -56,15 +53,7 @@ export default function PatientsPage() {
       }),
       columnHelper.accessor('status', {
         header: 'Status',
-        cell: (info) => {
-          const config = statusConfig[info.getValue()]
-          if (!config) return <span className="text-text-3">{info.getValue()}</span>
-          return (
-            <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium font-mono ${config.className}`}>
-              {config.label}
-            </span>
-          )
-        },
+        cell: (info) => <StatusBadge status={info.getValue()} />,
       }),
       columnHelper.accessor('phone', {
         header: 'Telefone',
@@ -116,15 +105,15 @@ export default function PatientsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="page-enter space-y-4">
         <div className="flex items-center justify-between">
-          <div className="h-8 w-40 rounded-lg bg-bg-2 animate-shimmer" />
-          <div className="h-10 w-36 rounded-xl bg-bg-2 animate-shimmer" />
+          <div className="h-8 w-40 animate-shimmer rounded-lg" />
+          <div className="h-10 w-36 animate-shimmer rounded-xl" />
         </div>
-        <div className="h-12 rounded-lg bg-bg-2 animate-shimmer" />
+        <div className="h-12 animate-shimmer rounded-lg" />
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-lg bg-bg-2 animate-shimmer" />
+            <div key={i} className="h-14 animate-shimmer rounded-lg" style={{ opacity: 1 - i * 0.12 }} />
           ))}
         </div>
       </div>
@@ -133,15 +122,17 @@ export default function PatientsPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-text-3">Erro ao carregar pacientes</p>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-bg-2 px-4 py-2 text-sm text-text-2 transition hover:border-border-hi"
-        >
+      <div className="page-enter flex flex-col items-center justify-center py-20 text-center gap-4">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10">
+          <RefreshCw size={24} className="text-danger" />
+        </div>
+        <div>
+          <p className="text-sm text-text-3">Erro ao carregar pacientes</p>
+          <p className="mt-1 text-[12px] text-text-3">Não foi possível conectar ao servidor</p>
+        </div>
+        <Button variant="ghost" size="sm" icon={<RefreshCw size={13} />} onClick={() => window.location.reload()}>
           Tentar novamente
-        </button>
+        </Button>
       </div>
     )
   }
@@ -150,17 +141,13 @@ export default function PatientsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-serif text-text-1">Pacientes</h1>
-        <button
-          type="button"
-          onClick={() => navigate('/patients/new')}
-          className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90"
-        >
-          <Plus size={16} /> Novo paciente
-        </button>
+        <Button size="sm" icon={<Plus size={15} />} onClick={() => navigate('/patients/new')}>
+          Novo paciente
+        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:shadow-[0_0_0_3px_var(--teal-10)]">
           <Search size={16} className="text-text-3" />
           <input
             type="text"
@@ -173,7 +160,7 @@ export default function PatientsPage() {
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
-          className="rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal"
+          className="rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal focus:shadow-[0_0_0_3px_var(--teal-10)]"
         >
           {statusOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -182,9 +169,17 @@ export default function PatientsPage() {
       </div>
 
       {filteredData.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-20">
-          <p className="text-text-3">Nenhum paciente encontrado</p>
-          <p className="mt-1 text-[12px] text-text-3">Tente ajustar os filtros ou cadastre um novo paciente</p>
+        <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-20 gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-bg-2">
+            <Users size={24} className="text-text-3" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-text-3">Nenhum paciente encontrado</p>
+            <p className="mt-1 text-[12px] text-text-3">Tente ajustar os filtros ou cadastre um novo paciente</p>
+          </div>
+          <Button size="sm" icon={<Plus size={14} />} onClick={() => navigate('/patients/new')}>
+            Novo paciente
+          </Button>
         </div>
       ) : (
         <div className="overflow-hidden rounded-[var(--radius-xl)] border border-border bg-bg-1">
@@ -223,30 +218,20 @@ export default function PatientsPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-1">
         <span className="text-[12px] text-text-3 font-mono">
           Mostrando {filteredData.length} de {data?.totalElements ?? 0}
         </span>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={page === 0}
-            onClick={() => setPage((p) => p - 1)}
-            className="flex items-center gap-1 rounded-lg border border-border bg-bg-2 px-3 py-1.5 text-sm text-text-2 transition hover:border-border-hi disabled:opacity-40 disabled:cursor-not-allowed"
-          >
+          <Button variant="ghost" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
             <ChevronLeft size={14} /> Anterior
-          </button>
-          <span className="text-[12px] text-text-3 font-mono">
+          </Button>
+          <span className="text-[12px] text-text-3 font-mono min-w-[48px] text-center">
             {page + 1} de {data?.totalPages ?? 1}
           </span>
-          <button
-            type="button"
-            disabled={(data?.totalPages ?? 1) <= page + 1}
-            onClick={() => setPage((p) => p + 1)}
-            className="flex items-center gap-1 rounded-lg border border-border bg-bg-2 px-3 py-1.5 text-sm text-text-2 transition hover:border-border-hi disabled:opacity-40 disabled:cursor-not-allowed"
-          >
+          <Button variant="ghost" size="sm" disabled={(data?.totalPages ?? 1) <= page + 1} onClick={() => setPage((p) => p + 1)}>
             Próximo <ChevronRight size={14} />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
