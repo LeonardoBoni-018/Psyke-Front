@@ -1,4 +1,5 @@
 import { api } from '@/lib/axios'
+import { isAxiosError } from 'axios'
 import type { PaginatedResponse } from '@/types/api'
 import type {
   ProntuarioResponse,
@@ -15,8 +16,9 @@ export async function findProntuarioByPatient(patientId: string): Promise<Prontu
   try {
     const response = await api.get<ProntuarioResponse[]>('/prontuarios', { params: { patientId } })
     return response.data
-  } catch {
-    return []
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.status === 404) return []
+    throw err
   }
 }
 
@@ -65,8 +67,9 @@ export async function findAnamnese(prontuarioId: string): Promise<AnamneseRespon
   try {
     const response = await api.get<AnamneseResponse>(`/prontuarios/${prontuarioId}/anamnese`)
     return response.data
-  } catch {
-    return null
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.status === 404) return null
+    throw err
   }
 }
 

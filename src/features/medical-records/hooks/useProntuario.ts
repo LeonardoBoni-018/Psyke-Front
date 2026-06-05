@@ -35,7 +35,13 @@ export function useCreateProntuario() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: CreateProntuarioRequest) => createProntuario(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRONTUARIO_KEY }),
+    onSuccess: (result, variables) => {
+      queryClient.setQueryData<ProntuarioResponse[]>(
+        [...PRONTUARIO_KEY, 'patient', variables.patientId],
+        (old) => old ? [...old, result] : [result],
+      )
+      queryClient.invalidateQueries({ queryKey: PRONTUARIO_KEY })
+    },
   })
 }
 
