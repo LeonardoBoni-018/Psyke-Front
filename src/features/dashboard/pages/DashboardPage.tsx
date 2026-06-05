@@ -244,21 +244,21 @@ export default function DashboardPage() {
                 <>
                   <MetricBlock
                     label="Sessões"
-                    value={summary?.sessionsToday ?? sessions.length}
+                    value={summary?.todayAppointments ?? sessions.length}
                     sub={`${confirmed} confirmadas`}
                     accent="var(--text-1)"
                   />
                   <div style={{ height: 1, background: 'var(--border)' }} />
                   <MetricBlock
                     label="Pendentes"
-                    value={summary?.pendingConfirmation ?? pending}
+                    value={summary?.appointmentsByStatus?.SCHEDULED ?? pending}
                     sub="aguardando conf."
                     accent={pending > 0 ? 'var(--amber)' : 'var(--text-1)'}
                   />
                   <div style={{ height: 1, background: 'var(--border)' }} />
                   <MetricBlock
                     label="Pacientes ativos"
-                    value={summary?.activePatients ?? '—'}
+                    value={summary?.totalPatients ?? '—'}
                     accent="var(--text-1)"
                   />
                 </>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                 textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pacientes</span>
             </div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: 'var(--text-1)', lineHeight: 1 }}>
-              {summary?.activePatients ?? '—'}
+              {summary?.totalPatients ?? '—'}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
               em tratamento ativo
@@ -315,8 +315,8 @@ export default function DashboardPage() {
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
               marginBottom: 8, padding: '4px 8px', background: 'rgba(14,196,160,0.1)',
               borderRadius: 4, display: 'inline-block' }}>
-              {(summary?.pendingInvoicesCount ?? 0) > 0
-                ? `${summary?.pendingInvoicesCount} pendentes`
+              {(summary?.pendingAmount ?? 0) > 0
+                ? `R$ ${Number(summary?.pendingAmount ?? 0).toFixed(2)} pendentes`
                 : 'Em dia'}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8,

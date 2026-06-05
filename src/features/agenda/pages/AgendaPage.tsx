@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { Plus, Calendar, User, Clock, FileText, X } from 'lucide-react'
 import CalendarView from '@/features/agenda/components/CalendarView/CalendarView'
@@ -30,11 +31,12 @@ function AgendaSkeleton() {
 }
 
 export default function AgendaPage() {
+  const navigate = useNavigate()
   const today = new Date()
   const weekStart = startOfWeek(today, { weekStartsOn: 0 })
   const weekEnd = endOfWeek(today, { weekStartsOn: 0 })
 
-  const [dateRange, setDateRange] = useState({ startDate: format(weekStart, "yyyy-MM-dd'T'00:00:00"), endDate: format(weekEnd, "yyyy-MM-dd'T'23:59:59") })
+  const [dateRange, setDateRange] = useState({ from: format(weekStart, "yyyy-MM-dd'T'00:00:00"), to: format(weekEnd, "yyyy-MM-dd'T'23:59:59") })
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
   const { data: events, isLoading } = useCalendarEvents(dateRange)
@@ -48,7 +50,7 @@ export default function AgendaPage() {
   }, [])
 
   const handleDateSelect = useCallback((start: string, end: string) => {
-    setDateRange({ startDate: start, endDate: end })
+    setDateRange({ from: start, to: end })
   }, [])
 
   const handleConfirm = useCallback(() => {
@@ -63,7 +65,7 @@ export default function AgendaPage() {
 
   const handleCreateSession = useCallback(() => {
     if (!selectedEventId) return
-    createSession.mutate({ appointmentId: selectedEventId, notes: '' })
+    createSession.mutate({ appointmentId: selectedEventId, prontuario: '' })
   }, [selectedEventId, createSession])
 
   const statusInfo = selectedAppointment ? statusConfig[selectedAppointment.status] : null
@@ -74,7 +76,7 @@ export default function AgendaPage() {
         <div className="flex items-center justify-between">
           <h1 className="font-serif text-2xl text-text-1">Agenda</h1>
           <div className="flex items-center gap-3">
-            <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />}>
+            <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => navigate('/agenda/new')}>
               Agendar
             </Button>
           </div>

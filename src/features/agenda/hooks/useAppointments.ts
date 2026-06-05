@@ -14,7 +14,7 @@ import type { CalendarEvent } from '@/types/appointment'
 export const APPOINTMENTS_KEY = ['appointments'] as const
 export const CALENDAR_KEY = ['calendar'] as const
 
-export function useCalendarEvents(params: { startDate: string; endDate: string; professionalId?: string }) {
+export function useCalendarEvents(params: { from: string; to: string; professionalId?: string }) {
   return useQuery<CalendarEvent[]>({
     queryKey: [...CALENDAR_KEY, params],
     queryFn: () => getCalendarEvents(params),

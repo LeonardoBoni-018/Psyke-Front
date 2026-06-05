@@ -42,7 +42,7 @@ export interface CalendarEvent {
 
 export interface CreateSessionRequest {
   appointmentId: string
-  notes: string
+  prontuario: string
 }
 
 export interface RecurrenceRequest {

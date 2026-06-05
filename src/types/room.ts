@@ -1,5 +1,4 @@
 export type RoomType = 'PHYSICAL' | 'VIRTUAL'
-export type RoomStatus = 'ACTIVE' | 'INACTIVE'
 
 export interface RoomResponse {
   id: string
@@ -7,7 +6,8 @@ export interface RoomResponse {
   type: RoomType
   capacity: number
   color: string
-  status: RoomStatus
+  active: boolean
+  createdAt: string
 }
 
 export interface CreateRoomRequest {

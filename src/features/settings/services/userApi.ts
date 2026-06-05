@@ -13,6 +13,6 @@ export async function createUser(data: CreateUserRequest): Promise<UserResponse>
 }
 
 export async function updateRoles(data: UpdateRolesRequest): Promise<UserResponse> {
-  const response = await api.put<UserResponse>(`/users/${data.userId}/roles`, { roles: data.roles })
+  const response = await api.patch<UserResponse>(`/users/${data.userId}/roles`, { roles: data.roles })
   return response.data
 }

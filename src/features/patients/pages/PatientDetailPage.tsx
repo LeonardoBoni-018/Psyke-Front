@@ -1,31 +1,11 @@
-import { useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ArrowLeft, FileText, DollarSign, Calendar, Mail, Phone, User, CreditCard } from 'lucide-react'
 import { usePatient } from '@/features/patients/hooks/usePatient'
-import type { PatientStatus } from '@/types/status'
 
-const statusConfig: Record<PatientStatus, { label: string; className: string }> = {
+const statusConfig: Record<string, { label: string; className: string }> = {
   ACTIVE: { label: 'Ativo', className: 'bg-teal/15 text-teal' },
   INACTIVE: { label: 'Inativo', className: 'bg-text-3/10 text-text-3' },
-  WAITING: { label: 'Em espera', className: 'bg-amber/15 text-amber' },
-  DISCHARGED: { label: 'Alta', className: 'bg-info/15 text-info' },
-}
-
-const genderLabels: Record<string, string> = {
-  MALE: 'Masculino',
-  FEMALE: 'Feminino',
-  NON_BINARY: 'Não-binário',
-  OTHER: 'Outro',
-  PREFER_NOT_TO_SAY: 'Prefere não informar',
-}
-
-const maritalStatusLabels: Record<string, string> = {
-  SINGLE: 'Solteiro(a)',
-  MARRIED: 'Casado(a)',
-  DIVORCED: 'Divorciado(a)',
-  WIDOWED: 'Viúvo(a)',
-  OTHER: 'Outro',
 }
 
 function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ size?: number }>; label: string; value: string }) {
@@ -46,16 +26,6 @@ export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: patient, isLoading, isError, error } = usePatient(id!)
-
-  const age = useMemo(() => {
-    if (!patient) return ''
-    const birth = new Date(patient.birthDate)
-    const today = new Date()
-    let age = today.getFullYear() - birth.getFullYear()
-    const m = today.getMonth() - birth.getMonth()
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-    return `${age} anos`
-  }, [patient])
 
   if (isLoading) {
     return (
@@ -88,6 +58,7 @@ export default function PatientDetailPage() {
   if (!patient) return null
 
   const statusStyle = statusConfig[patient.status]
+  if (!statusStyle) return null
 
   return (
     <div className="space-y-6">
@@ -114,24 +85,18 @@ export default function PatientDetailPage() {
             </div>
 
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              <InfoRow icon={User} label="Idade / Gênero" value={`${age} · ${genderLabels[patient.gender]}`} />
-              <InfoRow icon={User} label="Estado civil" value={maritalStatusLabels[patient.maritalStatus]} />
+              <InfoRow icon={User} label="Gênero" value={patient.gender || '—'} />
+              <InfoRow icon={User} label="Estado civil" value={patient.maritalStatus || '—'} />
               <InfoRow icon={Mail} label="E-mail" value={patient.email} />
               <InfoRow icon={Phone} label="Telefone" value={patient.phone} />
               <InfoRow icon={CreditCard} label="CPF" value={patient.cpf} />
               {patient.occupation && <InfoRow icon={Calendar} label="Profissão" value={patient.occupation} />}
+              {patient.referredBy && <InfoRow icon={User} label="Indicado por" value={patient.referredBy} />}
               {patient.insurance && (
                 <InfoRow icon={CreditCard} label="Convênio" value={`${patient.insurance}${patient.insuranceNumber ? ` (${patient.insuranceNumber})` : ''}`} />
               )}
             </div>
           </div>
-
-          {patient.notes && (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 shadow-sm">
-              <h2 className="text-sm font-semibold text-text-1">Observações</h2>
-              <p className="mt-2 text-sm text-text-2 leading-relaxed">{patient.notes}</p>
-            </div>
-          )}
         </div>
 
         <div className="space-y-4">

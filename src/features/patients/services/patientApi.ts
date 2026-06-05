@@ -1,19 +1,15 @@
 import { api } from '@/lib/axios'
 import type { PaginatedResponse } from '@/types/api'
-import type { PatientStatus } from '@/types/status'
-import type { PatientResponse, PatientListItem, CreatePatientRequest, UpdatePatientRequest } from '@/types/patient'
+import type { PatientResponse, CreatePatientRequest, UpdatePatientRequest } from '@/types/patient'
 
 interface PatientListParams {
-  status?: PatientStatus
   page?: number
   size?: number
-  search?: string
+  sort?: string
 }
 
-export async function listPatients(params?: PatientListParams): Promise<PaginatedResponse<PatientListItem>> {
-  const response = await api.get<PaginatedResponse<PatientListItem>>('/patients', {
-    params,
-  })
+export async function listPatients(params?: PatientListParams): Promise<PaginatedResponse<PatientResponse>> {
+  const response = await api.get<PaginatedResponse<PatientResponse>>('/patients', { params })
   return response.data
 }
 

@@ -2,12 +2,12 @@ import { api } from '@/lib/axios'
 import type { AppointmentResponse } from '@/types/appointment'
 
 export interface DashboardSummary {
-  sessionsToday: number
-  pendingConfirmation: number
-  activePatients: number
+  totalPatients: number
   totalProfessionals: number
-  paidInvoicesCount?: number
-  pendingInvoicesCount?: number
+  todayAppointments: number
+  appointmentsByStatus: Record<string, number>
+  monthlyRevenue: number
+  pendingAmount: number
 }
 
 export const dashboardApi = {

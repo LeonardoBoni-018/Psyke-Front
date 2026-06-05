@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { User, Plus, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import { useProfessionals } from '@/features/professionals/hooks/useProfessionals'
 import type { ProfessionalResponse } from '@/types/professional'
@@ -23,8 +24,8 @@ function ProfessionalCard({ professional }: { professional: ProfessionalResponse
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.1em] text-text-3">Especialização</p>
-          <p className="text-text-1">{professional.specialization || '—'}</p>
+          <p className="text-[11px] uppercase tracking-[0.1em] text-text-3">Especialidade</p>
+          <p className="text-text-1">{professional.specialty || '—'}</p>
         </div>
         <div>
           <p className="text-[11px] uppercase tracking-[0.1em] text-text-3">Abordagem</p>
@@ -40,16 +41,21 @@ function ProfessionalCard({ professional }: { professional: ProfessionalResponse
         </div>
       </div>
       <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-        <span className={`inline-flex items-center gap-1 text-[12px] font-mono ${professional.acceptsInsurance ? 'text-teal' : 'text-text-3'}`}>
-          {professional.acceptsInsurance ? <CheckCircle size={14} /> : <XCircle size={14} />}
-          Convênio
-        </span>
+        <div className="flex items-center gap-3">
+          <span className={`inline-flex items-center gap-1 text-[12px] font-mono ${professional.acceptsInsurance ? 'text-teal' : 'text-text-3'}`}>
+            {professional.acceptsInsurance ? <CheckCircle size={14} /> : <XCircle size={14} />}
+            Convênio
+          </span>
+          <span className={`inline-flex items-center gap-1 text-[12px] font-mono ${professional.active ? 'text-teal' : 'text-danger'}`}>
+            {professional.active ? <CheckCircle size={14} /> : <XCircle size={14} />}
+            {professional.active ? 'Ativo' : 'Inativo'}
+          </span>
+        </div>
         <button type="button" className="text-[12px] text-teal transition hover:text-teal/80">Editar</button>
       </div>
       {expanded && (
         <div className="mt-4 border-t border-border pt-4 text-sm text-text-2 space-y-1">
-          <p><span className="text-[11px] uppercase tracking-[0.1em] text-text-3">Email:</span> {professional.email}</p>
-          <p><span className="text-[11px] uppercase tracking-[0.1em] text-text-3">Telefone:</span> {professional.phone}</p>
+          <p><span className="text-[11px] uppercase tracking-[0.1em] text-text-3">Resumo:</span> {professional.resume || '—'}</p>
         </div>
       )}
     </div>
@@ -57,6 +63,7 @@ function ProfessionalCard({ professional }: { professional: ProfessionalResponse
 }
 
 export default function ProfessionalsPage() {
+  const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useProfessionals()
 
   if (isLoading) {
@@ -117,6 +124,7 @@ export default function ProfessionalsPage() {
         <h1 className="text-2xl font-serif text-text-1">Profissionais</h1>
         <button
           type="button"
+          onClick={() => navigate('/professionals/new')}
           className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90"
         >
           <Plus size={16} /> Novo profissional

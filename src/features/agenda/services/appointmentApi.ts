@@ -13,8 +13,8 @@ interface AppointmentListParams {
   patientId?: string
   professionalId?: string
   status?: string
-  startDate?: string
-  endDate?: string
+  from?: string
+  to?: string
   page?: number
   size?: number
 }
@@ -30,10 +30,9 @@ export async function listAppointments(params?: AppointmentListParams): Promise<
 }
 
 export async function getCalendarEvents(params: {
-  startDate: string
-  endDate: string
+  from: string
+  to: string
   professionalId?: string
-  roomId?: string
 }): Promise<CalendarEvent[]> {
   const response = await api.get<CalendarEvent[]>('/appointments/calendar', { params })
   return response.data

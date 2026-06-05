@@ -8,11 +8,14 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'))
 const AgendaPage = lazy(() => import('@/features/agenda/pages/AgendaPage'))
+const AppointmentFormPage = lazy(() => import('@/features/agenda/pages/AppointmentFormPage'))
 const PatientsPage = lazy(() => import('@/features/patients/pages/PatientsPage'))
 const PatientDetailPage = lazy(() => import('@/features/patients/pages/PatientDetailPage'))
+const PatientFormPage = lazy(() => import('@/features/patients/pages/PatientFormPage'))
 const MedicalRecordsPage = lazy(() => import('@/features/medical-records/pages/MedicalRecordsPage'))
 const FinancialPage = lazy(() => import('@/features/financial/pages/FinancialPage'))
 const ProfessionalsPage = lazy(() => import('@/features/professionals/pages/ProfessionalsPage'))
+const ProfessionalFormPage = lazy(() => import('@/features/professionals/pages/ProfessionalFormPage'))
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'))
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'))
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'))
@@ -68,8 +71,16 @@ export const router = createBrowserRouter([
         element: <SuspendedPage><AgendaPage /></SuspendedPage>,
       },
       {
+        path: 'agenda/new',
+        element: <SuspendedPage><AppointmentFormPage /></SuspendedPage>,
+      },
+      {
         path: 'patients',
         element: <SuspendedPage><PatientsPage /></SuspendedPage>,
+      },
+      {
+        path: 'patients/new',
+        element: <SuspendedPage><PatientFormPage /></SuspendedPage>,
       },
       {
         path: 'patients/:id',
@@ -90,6 +101,10 @@ export const router = createBrowserRouter([
       {
         path: 'professionals',
         element: <SuspendedPage><ProfessionalsPage /></SuspendedPage>,
+      },
+      {
+        path: 'professionals/new',
+        element: <SuspendedPage><ProfessionalFormPage /></SuspendedPage>,
       },
       {
         path: 'reports',

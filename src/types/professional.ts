@@ -1,35 +1,34 @@
-export type ProfessionalStatus = 'ACTIVE' | 'INACTIVE'
 export type AppointmentDuration = 30 | 45 | 50 | 60
 
 export interface ProfessionalResponse {
   id: string
   fullName: string
-  email: string
-  phone: string
   crp: string
-  specialization: string
-  approach: string
-  sessionValue: number
-  sessionDuration: AppointmentDuration
+  specialty?: string
+  approach?: string
+  resume?: string
+  sessionValue?: number
+  sessionDuration: number
   acceptsInsurance: boolean
-  status: ProfessionalStatus
+  active: boolean
   createdAt: string
   updatedAt: string
 }
 
 export interface CreateProfessionalRequest {
-  fullName: string
-  email: string
-  phone: string
   crp: string
-  specialization?: string
+  fullName: string
+  specialty?: string
   approach?: string
+  resume?: string
   sessionValue?: number
   sessionDuration?: AppointmentDuration
   acceptsInsurance?: boolean
 }
 
-export type UpdateProfessionalRequest = Partial<CreateProfessionalRequest>
+export type UpdateProfessionalRequest = Partial<CreateProfessionalRequest> & {
+  active?: boolean
+}
 
 export interface Slot {
   id: string

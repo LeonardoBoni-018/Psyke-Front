@@ -11,10 +11,12 @@ vi.mock('@/features/dashboard/services/dashboardApi', () => ({
 }))
 
 const mockSummary = {
-  sessionsToday: 8,
-  pendingConfirmation: 3,
-  activePatients: 42,
+  totalPatients: 42,
   totalProfessionals: 5,
+  todayAppointments: 8,
+  appointmentsByStatus: { SCHEDULED: 3, CONFIRMED: 5 },
+  monthlyRevenue: 12500,
+  pendingAmount: 3200,
 }
 
 const mockSessions: AppointmentResponse[] = [

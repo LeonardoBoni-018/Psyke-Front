@@ -10,24 +10,20 @@ import {
 } from '@tanstack/react-table'
 import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePatients } from '@/features/patients/hooks/usePatients'
-import type { PatientListItem } from '@/types/patient'
+import type { PatientResponse } from '@/types/patient'
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   ACTIVE: { label: 'Ativo', className: 'bg-teal/15 text-teal' },
   INACTIVE: { label: 'Inativo', className: 'bg-text-3/10 text-text-3' },
-  WAITING: { label: 'Em espera', className: 'bg-amber/15 text-amber' },
-  DISCHARGED: { label: 'Alta', className: 'bg-info/15 text-info' },
 }
 
 const statusOptions = [
   { value: '', label: 'Todos' },
   { value: 'ACTIVE', label: 'Ativo' },
   { value: 'INACTIVE', label: 'Inativo' },
-  { value: 'WAITING', label: 'Em espera' },
-  { value: 'DISCHARGED', label: 'Alta' },
 ]
 
-const columnHelper = createColumnHelper<PatientListItem>()
+const columnHelper = createColumnHelper<PatientResponse>()
 
 export default function PatientsPage() {
   const navigate = useNavigate()
@@ -35,12 +31,20 @@ export default function PatientsPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(0)
 
-  const { data, isLoading, isError } = usePatients({
-    status: statusFilter ? (statusFilter as PatientListItem['status']) : undefined,
-    page,
-    size: 10,
-    search: search || undefined,
-  })
+  const { data, isLoading, isError } = usePatients({ page, size: 10 })
+
+  const filteredData = useMemo(() => {
+    if (!data?.content) return []
+    let items = data.content
+    if (statusFilter) {
+      items = items.filter((p) => p.status === statusFilter)
+    }
+    if (search) {
+      const q = search.toLowerCase()
+      items = items.filter((p) => p.fullName.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q))
+    }
+    return items
+  }, [data, statusFilter, search])
 
   const columns = useMemo(
     () => [
@@ -54,6 +58,7 @@ export default function PatientsPage() {
         header: 'Status',
         cell: (info) => {
           const config = statusConfig[info.getValue()]
+          if (!config) return <span className="text-text-3">{info.getValue()}</span>
           return (
             <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium font-mono ${config.className}`}>
               {config.label}
@@ -69,11 +74,18 @@ export default function PatientsPage() {
         header: 'Email',
         cell: (info) => <span className="text-text-2 text-sm">{info.getValue() || '—'}</span>,
       }),
-      columnHelper.accessor('professionalName', {
-        header: 'Profissional',
-        cell: (info) => <span className="text-text-2 text-sm">{info.getValue()}</span>,
+      columnHelper.accessor('birthDate', {
+        header: 'Nascimento',
+        cell: (info) => {
+          const date = info.getValue()
+          return (
+            <span className="text-text-2 text-sm">
+              {date ? format(new Date(date), 'dd/MM/yyyy') : '—'}
+            </span>
+          )
+        },
       }),
-      columnHelper.accessor('lastSessionDate', {
+      columnHelper.accessor('lastAppointment', {
         header: 'Última sessão',
         cell: (info) => {
           const date = info.getValue()
@@ -89,7 +101,7 @@ export default function PatientsPage() {
   )
 
   const table = useReactTable({
-    data: data?.content ?? [],
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -140,6 +152,7 @@ export default function PatientsPage() {
         <h1 className="text-2xl font-serif text-text-1">Pacientes</h1>
         <button
           type="button"
+          onClick={() => navigate('/patients/new')}
           className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90"
         >
           <Plus size={16} /> Novo paciente
@@ -153,7 +166,7 @@ export default function PatientsPage() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-            placeholder="Buscar por nome..."
+            placeholder="Buscar por nome ou email..."
             className="w-64 bg-transparent text-sm text-text-1 outline-none placeholder:text-text-3"
           />
         </div>
@@ -168,7 +181,7 @@ export default function PatientsPage() {
         </select>
       </div>
 
-      {data?.content.length === 0 ? (
+      {filteredData.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-20">
           <p className="text-text-3">Nenhum paciente encontrado</p>
           <p className="mt-1 text-[12px] text-text-3">Tente ajustar os filtros ou cadastre um novo paciente</p>
@@ -211,7 +224,7 @@ export default function PatientsPage() {
 
       <div className="flex items-center justify-between">
         <span className="text-[12px] text-text-3 font-mono">
-          Mostrando {data?.content.length ?? 0} de {data?.totalElements ?? 0}
+          Mostrando {filteredData.length} de {data?.totalElements ?? 0}
         </span>
         <div className="flex items-center gap-2">
           <button

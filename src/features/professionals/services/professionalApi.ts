@@ -6,7 +6,7 @@ import type {
   UpdateProfessionalRequest,
 } from '@/types/professional'
 
-export async function listProfessionals(params?: { page?: number; size?: number; status?: string }): Promise<PaginatedResponse<ProfessionalResponse>> {
+export async function listProfessionals(params?: { page?: number; size?: number }): Promise<PaginatedResponse<ProfessionalResponse>> {
   const response = await api.get<PaginatedResponse<ProfessionalResponse>>('/professionals', { params })
   return response.data
 }

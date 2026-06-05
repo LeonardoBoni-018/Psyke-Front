@@ -13,11 +13,11 @@ const mockPatient = {
   fullName: 'Maria Silva',
   birthDate: '1990-05-15',
   status: 'ACTIVE' as const,
+  cpf: '123.456.789-00',
   phone: '(11) 99999-8888',
   email: 'maria@email.com',
-  professionalName: 'Dr. João',
-  lastSessionDate: '2026-05-20',
-  createdAt: '2026-01-10',
+  createdAt: '2026-01-10T00:00:00Z',
+  updatedAt: '2026-01-10T00:00:00Z',
 }
 
 function createWrapper() {
