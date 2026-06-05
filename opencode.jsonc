@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "instructions": ["AGENTS.md", "SKILL_UI_COMPONENTS.md", "SKILL_ANIMATIONS.md", "SKILL_LAYOUTS.md"],
   "command": {
     "dev": {
       "description": "Start development server",
