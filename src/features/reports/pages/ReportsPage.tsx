@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { BarChart2, AlertCircle } from 'lucide-react'
 import { FinancialReportCard } from '@/features/reports/components/FinancialReportCard/FinancialReportCard'
 import { ClinicalReportCard } from '@/features/reports/components/ClinicalReportCard/ClinicalReportCard'
 import { ReportFilters } from '@/features/reports/components/ReportFilters/ReportFilters'
@@ -22,16 +23,20 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[var(--radius-xl)] border border-border bg-bg-2 p-6 shadow-sm">
-        <p className="text-sm uppercase tracking-[0.18em] text-text-3">Relatórios</p>
-        <h1 className="mt-2 text-3xl font-semibold text-text-1">Análise clínica e financeira</h1>
-        <p className="mt-2 text-sm text-text-3">Acompanhe desempenho financeiro e resultados de tratamento em um único painel.</p>
+      <div className="flex items-start gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+        <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
+          <BarChart2 size={20} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-serif text-text-1">Relatórios</h1>
+          <p className="mt-1 text-sm text-text-3">Acompanhe desempenho financeiro e resultados de tratamento em um único painel.</p>
+        </div>
       </div>
 
       <ReportFilters from={dates.from} to={dates.to} onChange={(value) => setDates(value)} />
 
       {isLoading ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="page-enter grid gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
             <div className="animate-shimmer h-4 w-1/3 rounded" />
             <div className="animate-shimmer h-8 w-1/2 rounded" />
@@ -50,16 +55,18 @@ export default function ReportsPage() {
           {financialReportQuery.data ? (
             <FinancialReportCard report={financialReportQuery.data} />
           ) : (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-text-3">
-              Não foi possível carregar o relatório financeiro.
+            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
+              <AlertCircle size={22} className="text-text-3 opacity-50" />
+              <p className="text-sm text-text-3">Não foi possível carregar o relatório financeiro</p>
             </div>
           )}
 
           {clinicalReportQuery.data ? (
             <ClinicalReportCard report={clinicalReportQuery.data} />
           ) : (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-text-3">
-              Não foi possível carregar o relatório clínico.
+            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
+              <AlertCircle size={22} className="text-text-3 opacity-50" />
+              <p className="text-sm text-text-3">Não foi possível carregar o relatório clínico</p>
             </div>
           )}
         </div>

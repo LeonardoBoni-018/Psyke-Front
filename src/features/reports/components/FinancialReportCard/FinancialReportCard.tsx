@@ -16,7 +16,7 @@ export function FinancialReportCard({ report }: FinancialReportCardProps) {
     <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-text-1">Resumo financeiro</h2>
+          <h2 className="text-xl font-serif text-text-1">Resumo financeiro</h2>
           <p className="mt-1 text-sm text-text-3">Visão geral das receitas e recebíveis no período.</p>
         </div>
       </div>

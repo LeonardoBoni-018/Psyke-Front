@@ -14,7 +14,7 @@ export function ReportFilters({ from, to, onChange }: ReportFiltersProps) {
             type="date"
             value={from}
             onChange={(event) => onChange({ from: event.target.value, to })}
-            className="mt-2 w-full rounded-xl border border-border bg-bg-1 px-4 py-3 text-text-1"
+            className="mt-2 w-full rounded-xl border border-border bg-bg-1 px-4 py-3 text-text-1 outline-none transition-shadow focus:ring-2 focus:ring-teal/40"
           />
         </label>
         <label className="block text-sm text-text-2">
@@ -23,7 +23,7 @@ export function ReportFilters({ from, to, onChange }: ReportFiltersProps) {
             type="date"
             value={to}
             onChange={(event) => onChange({ from, to: event.target.value })}
-            className="mt-2 w-full rounded-xl border border-border bg-bg-1 px-4 py-3 text-text-1"
+            className="mt-2 w-full rounded-xl border border-border bg-bg-1 px-4 py-3 text-text-1 outline-none transition-shadow focus:ring-2 focus:ring-teal/40"
           />
         </label>
         <div className="flex items-end">
