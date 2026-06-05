@@ -5,6 +5,7 @@ import { Clock, Users, DollarSign, AlertCircle, CheckCircle2,
   WifiOff } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Button } from '@/components/ui/Button'
 import { useDashboardSummary, useTodaySessions } from '../hooks/useDashboard'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { AppointmentResponse } from '@/types/appointment'
@@ -103,7 +104,7 @@ function SessionRow({ session, onClick }: { session: AppointmentResponse; onClic
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {session.notes ?? 'Sessão sem descrição'}
+          {session.notes || 'Sessão'}
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
           {fmtTime(session.startTime)} – {fmtTime(session.endTime)}
@@ -196,7 +197,7 @@ export default function DashboardPage() {
   const confirmed = sessions.filter(s => s.status === 'CONFIRMED').length
   const pending = sessions.filter(s => s.status === 'SCHEDULED').length
 
-  const firstName = user?.fullName?.split(' ')[0] ?? 'Dr(a)'
+  const firstName = user?.fullName?.split(' ')[0] ?? ''
 
   return (
     <div style={{ padding: '28px 28px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -204,28 +205,19 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: 'var(--text-1)',
-            marginBottom: 4, lineHeight: 1.2 }}>
-            {greeting()}, {firstName}.
+            marginBottom: 2, lineHeight: 1.2 }}>
+            {greeting()}{firstName ? `, ${firstName}.` : '.'}
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-3)' }}>
-            {todayCapitalized}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--teal)' }} />
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)', margin: 0 }}>
+              {todayCapitalized}
+            </p>
+          </div>
         </div>
-        <button
-          onClick={() => navigate('/agenda?new=true')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '9px 18px', background: 'var(--teal)', color: 'var(--bg-0)',
-            border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-            fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 13,
-            transition: 'background 150ms',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#12dbb2')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--teal)')}
-        >
-          <CalendarPlus size={15} />
+        <Button size="md" icon={<CalendarPlus size={15} />} onClick={() => navigate('/agenda/new')}>
           Nova sessão
-        </button>
+        </Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
@@ -295,10 +287,10 @@ export default function DashboardPage() {
             style={{
               background: 'var(--bg-1)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
-              transition: 'border-color 150ms',
+              transition: 'all 150ms',
             }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-hi)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hi)'; e.currentTarget.style.background = 'var(--bg-2)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-1)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Users size={13} style={{ color: 'var(--info)' }} />
@@ -324,10 +316,10 @@ export default function DashboardPage() {
             style={{
               background: 'var(--bg-1)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
-              transition: 'border-color 150ms',
+              transition: 'all 150ms',
             }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-hi)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hi)'; e.currentTarget.style.background = 'var(--bg-2)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-1)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <DollarSign size={13} style={{ color: 'var(--teal)' }} />
@@ -372,16 +364,14 @@ export default function DashboardPage() {
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => navigate('/agenda')}
-                style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
-                  background: 'none', border: 'none', cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', gap: 4,
-                }}
-              >
+              <span onClick={() => navigate('/agenda')} style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+                transition: 'opacity 150ms',
+              }} onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
                 Ver agenda <ChevronRight size={12} />
-              </button>
+              </span>
             </div>
 
             {loadingSess ? (
@@ -419,13 +409,16 @@ export default function DashboardPage() {
                   Nenhuma sessão agendada para hoje
                 </p>
                 <button
-                  onClick={() => navigate('/agenda?new=true')}
-                  style={{
+                  onClick={() => navigate('/agenda/new')}
+                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
                     padding: '7px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                     background: 'rgba(14,196,160,0.1)', border: '1px solid rgba(14,196,160,0.3)',
                     color: 'var(--teal)', fontSize: 12, fontFamily: 'var(--font-sans)',
+                    transition: 'all 150ms',
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,196,160,0.18)'; e.currentTarget.style.borderColor = 'var(--teal)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14,196,160,0.1)'; e.currentTarget.style.borderColor = 'rgba(14,196,160,0.3)' }}
                 >
                   <CalendarPlus size={14} /> Agendar sessão
                 </button>
@@ -447,32 +440,27 @@ export default function DashboardPage() {
           </div>
 
           <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-              textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-              Acesso rápido
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--info)', opacity: 0.5 }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
+                textTransform: 'uppercase', letterSpacing: '0.1em' }}>Acesso rápido</span>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <ActionCard
-                icon={<CalendarPlus size={16} />}
-                label="Agendar sessão"
-                description="Criar novo agendamento com slot disponível"
-                onClick={() => navigate('/agenda?new=true')}
-                accent="var(--teal)"
-              />
-              <ActionCard
-                icon={<UserPlus size={16} />}
-                label="Novo paciente"
-                description="Cadastrar paciente e abrir prontuário"
-                onClick={() => navigate('/patients?new=true')}
-                accent="var(--info)"
-              />
-              <ActionCard
-                icon={<Search size={16} />}
-                label="Buscar prontuário"
-                description="Acessar evoluções e anamnese"
-                onClick={() => navigate('/medical-records')}
-                accent="var(--amber)"
-              />
+              {[
+                { icon: <CalendarPlus size={16} />, label: 'Agendar sessão', desc: 'Criar novo agendamento com slot disponível',                 path: '/agenda/new', accent: 'var(--teal)' },
+                { icon: <UserPlus size={16} />, label: 'Novo paciente', desc: 'Cadastrar paciente e abrir prontuário', path: '/patients/new', accent: 'var(--info)' },
+                { icon: <Search size={16} />, label: 'Buscar prontuário', desc: 'Acessar evoluções e anamnese', path: '/medical-records', accent: 'var(--amber)' },
+              ].map((card, i) => (
+                <div key={card.label} className="item-enter" style={{ flex: 1, animationDelay: `${i * 50}ms` }}>
+                  <ActionCard
+                    icon={card.icon}
+                    label={card.label}
+                    description={card.desc}
+                    onClick={() => navigate(card.path)}
+                    accent={card.accent}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
