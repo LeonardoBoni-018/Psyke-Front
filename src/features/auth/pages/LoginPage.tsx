@@ -41,8 +41,8 @@ function Field({ label, icon, iconRight, error, children }: FieldProps) {
           </span>
         )}
         {cloneElement(children, {
-          className: 'psyke-input',
           style: {
+            ...children.props.style,
             paddingLeft: icon ? '34px' : '12px',
             paddingRight: iconRight ? '36px' : '12px',
           },
@@ -64,6 +64,13 @@ function Field({ label, icon, iconRight, error, children }: FieldProps) {
   )
 }
 
+const inputStyle: CSSProperties = {
+  width: '100%', background: 'var(--bg-2)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-md)', padding: '9px 12px',
+  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--text-1)',
+  outline: 'none', transition: 'border-color 150ms, box-shadow 150ms',
+}
+
 export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const { mutate: login, isPending } = useLogin()
@@ -72,7 +79,7 @@ export default function LoginPage() {
   })
 
   return (
-    <div style={{
+    <div className="page-enter" style={{
       display: 'flex', height: '100vh', background: 'var(--bg-0)',
       backgroundImage: `
         linear-gradient(var(--border) 1px, transparent 1px),
@@ -131,23 +138,12 @@ export default function LoginPage() {
             Acesse sua clínica com suas credenciais
           </p>
 
-          <style>{`
-            .psyke-input {
-              width: 100%; background: var(--bg-2); border: 1px solid var(--border);
-              border-radius: var(--radius-md); padding: 9px 12px;
-              font-family: var(--font-sans); font-size: 13px; color: var(--text-1);
-              outline: none; transition: border-color 150ms, box-shadow 150ms;
-            }
-            .psyke-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-10); }
-            .psyke-input::placeholder { color: var(--text-3); }
-          `}</style>
-
           <form onSubmit={handleSubmit((d) => login(d))} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="ID da clínica" icon={<Building2 size={15} />} error={errors.tenantId?.message}>
-              <input {...register('tenantId')} placeholder="ex: demo" />
+              <input {...register('tenantId')} placeholder="ex: demo" style={{ ...inputStyle, paddingLeft: 34 }} />
             </Field>
             <Field label="E-mail" icon={<Mail size={15} />} error={errors.email?.message}>
-              <input {...register('email')} type="email" placeholder="seu@email.com" />
+              <input {...register('email')} type="email" placeholder="seu@email.com" style={{ ...inputStyle, paddingLeft: 34 }} />
             </Field>
             <Field
               label="Senha"
@@ -160,7 +156,7 @@ export default function LoginPage() {
                 </button>
               }
             >
-              <input {...register('password')} type={showPass ? 'text' : 'password'} placeholder="••••••••" />
+              <input {...register('password')} type={showPass ? 'text' : 'password'} placeholder="••••••••" style={{ ...inputStyle, paddingLeft: 34, paddingRight: 36 }} />
             </Field>
 
             <button type="submit" disabled={isPending} style={{
@@ -173,8 +169,8 @@ export default function LoginPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               transition: 'all 150ms',
             }}>
-              {isPending && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
-              {isPending ? 'Entrando...' : 'Entrar'}
+              {isPending && <Loader2 size={16} className="animate-spin" />}
+              Entrar
             </button>
 
             <a href="#" style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', marginTop: 4 }}

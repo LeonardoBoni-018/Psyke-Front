@@ -208,7 +208,8 @@ export default function PatientsPage() {
                 <tr
                   key={row.id}
                   onClick={() => handleRowClick(row.original.id)}
-                  className="cursor-pointer border-b border-border/50 transition hover:bg-bg-2/50 last:border-0"
+                  className="item-enter cursor-pointer border-b border-border/50 transition hover:bg-bg-2/50 last:border-0"
+                  style={{ animationDelay: `${row.index * 35}ms` }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-sm">

@@ -28,14 +28,14 @@ const navItems: { section: string; items: NavItem[] }[] = [
     section: 'Principal',
     items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-      { label: 'Agenda', icon: Clock, path: '/agenda', badge: '4' },
+      { label: 'Agenda', icon: Clock, path: '/agenda' },
       { label: 'Pacientes', icon: Users, path: '/patients' },
     ],
   },
   {
     section: 'Gestão',
     items: [
-      { label: 'Financeiro', icon: DollarSign, path: '/financial', badge: '1', badgeWarning: true },
+      { label: 'Financeiro', icon: DollarSign, path: '/financial' },
       { label: 'Relatórios', icon: BarChart2, path: '/reports' },
       { label: 'Profissionais', icon: UserCheck, path: '/professionals' },
       { label: 'Configurações', icon: Settings, path: '/settings' },
@@ -152,9 +152,8 @@ export function Sidebar() {
       <div className="flex-1 overflow-y-auto py-4">
         {navItems.map((section) => (
           <div key={section.section} className="space-y-2">
-            <div className="relative px-4 pb-1">
+              <div className="px-4 pb-2">
               <span className="text-[10px] uppercase tracking-[0.12em] text-text-3">{section.section}</span>
-              <div className="absolute bottom-0 left-4 right-4 h-px bg-border" />
             </div>
             <div className="pt-1">
               {section.items.map((item) => (

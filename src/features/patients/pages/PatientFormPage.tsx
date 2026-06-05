@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ArrowLeft, User, Calendar, CreditCard, Phone, Mail, Briefcase, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { FormField, inputClass } from '@/components/ui/FormField'
 import { useCreatePatient } from '@/features/patients/hooks/useCreatePatient'
 import type { CreatePatientRequest } from '@/types/patient'
 
@@ -23,21 +24,6 @@ const patientSchema = z.object({
 
 type PatientFormValues = z.infer<typeof patientSchema>
 
-const inputClass = "w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
-
-function FormField({ icon: Icon, label, error, children }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <label className="block text-sm font-medium text-text-2">{label}</label>
-      <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
-        <Icon size={18} className="shrink-0 text-text-3" />
-        {children}
-      </div>
-      {error && <p className="mt-1 text-[11px] text-danger font-mono">{error}</p>}
-    </div>
-  )
-}
-
 export default function PatientFormPage() {
   const navigate = useNavigate()
   const createPatient = useCreatePatient()
@@ -49,7 +35,7 @@ export default function PatientFormPage() {
 
   const onSubmit = (values: PatientFormValues) => {
     const data = Object.fromEntries(
-      Object.entries(values).filter(([_, v]) => v !== '' && v !== undefined),
+      Object.entries(values).filter(([, v]) => v !== '' && v !== undefined),
     ) as unknown as CreatePatientRequest
     createPatient.mutate(data, {
       onSuccess: (patient) => navigate(`/patients/${patient.id}`),
@@ -76,7 +62,7 @@ export default function PatientFormPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="animate-scale-in space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8">
         <FormField icon={User} label="Nome completo" error={formState.errors.fullName?.message}>
           <input id="fullName" type="text" autoComplete="name" {...register('fullName')} className={inputClass} />
         </FormField>
@@ -146,7 +132,7 @@ export default function PatientFormPage() {
 
         <div className="flex items-center gap-3 pt-4 border-t border-border">
           <Button type="submit" loading={createPatient.isPending}>
-            {createPatient.isPending ? 'Salvando...' : 'Salvar paciente'}
+            Salvar paciente
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate('/patients')}>
             Cancelar

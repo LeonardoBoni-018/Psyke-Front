@@ -32,7 +32,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={ref}
-        className="relative w-full max-w-lg animate-slide-in-right border-l border-border bg-bg-1 shadow-2xl overflow-y-auto"
+        className="relative w-full max-w-lg animate-slide-right border-l border-border bg-bg-1 shadow-2xl overflow-y-auto"
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-lg font-serif text-text-1">{title}</h2>

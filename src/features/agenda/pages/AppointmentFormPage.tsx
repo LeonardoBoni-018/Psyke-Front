@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ArrowLeft, Calendar, Clock, User, FileText, DoorOpen, CalendarPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { FormField, inputClass } from '@/components/ui/FormField'
 import { useProfessionals } from '@/features/professionals/hooks/useProfessionals'
 import { usePatients } from '@/features/patients/hooks/usePatients'
 import { useCreateAppointment } from '@/features/agenda/hooks/useCreateAppointment'
@@ -32,6 +33,8 @@ export default function AppointmentFormPage() {
     mode: 'onTouched',
   })
 
+  const hasErrors = Object.keys(formState.errors).length > 0
+
   const selectedPatientId = watch('patientId')
 
   const filteredPatients = (patientsData?.content ?? []).filter((p) =>
@@ -56,8 +59,6 @@ export default function AppointmentFormPage() {
     )
   }
 
-  const inputClass = "w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
-
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <button
@@ -78,7 +79,7 @@ export default function AppointmentFormPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="animate-scale-in space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-text-2">Paciente</label>
@@ -143,48 +144,31 @@ export default function AppointmentFormPage() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-text-2">Início</label>
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
-              <Calendar size={18} className="text-text-3 shrink-0" />
-              <input type="datetime-local" {...register('startTime')} className={inputClass} />
-            </div>
-            {formState.errors.startTime && (
-              <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.startTime.message}</p>
-            )}
-          </div>
+          <FormField icon={Calendar} label="Início" error={formState.errors.startTime?.message}>
+            <input type="datetime-local" {...register('startTime')} className={inputClass} />
+          </FormField>
 
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-text-2">Fim</label>
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
-              <Clock size={18} className="text-text-3 shrink-0" />
-              <input type="datetime-local" {...register('endTime')} className={inputClass} />
-            </div>
-            {formState.errors.endTime && (
-              <p className="mt-1 text-[11px] text-danger font-mono">{formState.errors.endTime.message}</p>
-            )}
-          </div>
+          <FormField icon={Clock} label="Fim" error={formState.errors.endTime?.message}>
+            <input type="datetime-local" {...register('endTime')} className={inputClass} />
+          </FormField>
         </div>
 
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-text-2">Sala (opcional)</label>
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
-            <DoorOpen size={18} className="text-text-3 shrink-0" />
-            <input type="text" placeholder="ID da sala" {...register('roomId')} className={inputClass} />
-          </div>
-        </div>
+        <FormField icon={DoorOpen} label="Sala (opcional)">
+          <input type="text" placeholder="ID da sala" {...register('roomId')} className={inputClass} />
+        </FormField>
 
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-text-2">Observações (opcional)</label>
-          <div className="flex items-start gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal">
-            <FileText size={18} className="mt-0.5 text-text-3 shrink-0" />
-            <textarea rows={3} placeholder="Anotações sobre a consulta..." {...register('notes')} className={`${inputClass} resize-none`} />
-          </div>
-        </div>
+        <FormField icon={FileText} label="Observações (opcional)">
+          <textarea rows={3} placeholder="Anotações sobre a consulta..." {...register('notes')} className={`${inputClass} resize-none`} />
+        </FormField>
 
+        {formState.isSubmitted && hasErrors && (
+          <p key={formState.submitCount} className="animate-shake text-[11px] text-danger font-mono text-center">
+            Verifique os campos com erro
+          </p>
+        )}
         <div className="flex items-center gap-3 pt-4 border-t border-border">
           <Button type="submit" loading={createAppointment.isPending}>
-            {createAppointment.isPending ? 'Salvando...' : 'Agendar'}
+            Agendar
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate('/agenda')}>
             Cancelar

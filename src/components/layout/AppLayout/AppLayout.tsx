@@ -28,7 +28,7 @@ export function AppLayout() {
       <SidebarMemo />
       <main className="flex flex-1 flex-col overflow-hidden">
         <Topbar title={pageTitle} />
-        <div className="flex-1 overflow-y-auto px-6 py-6 page-enter">
+        <div key={location.pathname} className="flex-1 overflow-y-auto px-6 py-6 page-enter">
           <Outlet />
         </div>
       </main>

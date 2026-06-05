@@ -96,9 +96,28 @@ export default function FinancialPage() {
 
       <div className="grid gap-6">
         {summaryQuery.data ? <BalanceSummary summary={summaryQuery.data} /> : (
-          <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-center text-sm text-text-3">
-            {summaryQuery.isLoading ? 'Carregando resumo financeiro...' : 'Resumo financeiro indisponível.'}
-          </div>
+          summaryQuery.isLoading ? (
+            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+              <div className="flex gap-8">
+                <div className="space-y-2">
+                  <div className="animate-shimmer h-3 w-16 rounded" />
+                  <div className="animate-shimmer h-7 w-28 rounded" />
+                </div>
+                <div className="space-y-2">
+                  <div className="animate-shimmer h-3 w-16 rounded" />
+                  <div className="animate-shimmer h-7 w-28 rounded" />
+                </div>
+                <div className="space-y-2">
+                  <div className="animate-shimmer h-3 w-16 rounded" />
+                  <div className="animate-shimmer h-7 w-28 rounded" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-center text-sm text-text-3">
+              Resumo financeiro indisponível.
+            </div>
+          )
         )}
 
         <ChargeToolbar
@@ -124,8 +143,14 @@ export default function FinancialPage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-2 p-8 text-center text-text-3">
-              Carregando cobranças...
+            <div className="space-y-3 p-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4" style={{ opacity: 1 - i * 0.15 }}>
+                  <div className="animate-shimmer h-4 w-32 rounded" />
+                  <div className="animate-shimmer h-4 w-20 rounded" />
+                  <div className="animate-shimmer h-4 w-16 rounded ml-auto" />
+                </div>
+              ))}
             </div>
           ) : (
             <ChargeTable

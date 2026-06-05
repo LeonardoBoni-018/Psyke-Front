@@ -1,6 +1,26 @@
 import { useState } from 'react'
 import * as Tabs from '@radix-ui/react-tabs'
-import { Building2, DoorOpen, Users, Plus } from 'lucide-react'
+import { Building2, DoorOpen, Users, Plus, Inbox } from 'lucide-react'
+
+function EmptySection({ icon, title, buttonLabel, onClick }: { icon: React.ReactNode; title: string; buttonLabel?: string; onClick?: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 px-6 py-14 transition hover:border-border-hi">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-bg-2 text-text-3">
+        {icon}
+      </div>
+      <p className="text-sm text-text-3">{title}</p>
+      {buttonLabel && onClick && (
+        <button
+          type="button"
+          onClick={onClick}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-2 px-3 py-1.5 text-[12px] text-text-2 transition hover:border-border-hi hover:text-text-1"
+        >
+          <Plus size={13} /> {buttonLabel}
+        </button>
+      )}
+    </div>
+  )
+}
 
 export default function SettingsPage() {
   const [tab, setTab] = useState('clinic')
@@ -45,9 +65,7 @@ export default function SettingsPage() {
               <Plus size={16} /> Nova sala
             </button>
           </div>
-          <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-center text-sm text-text-3">
-            Nenhuma sala cadastrada
-          </div>
+          <EmptySection icon={<DoorOpen size={20} />} title="Nenhuma sala cadastrada" buttonLabel="Nova sala" onClick={() => {}} />
         </Tabs.Content>
 
         <Tabs.Content value="users" className="space-y-4">
@@ -57,9 +75,7 @@ export default function SettingsPage() {
               <Plus size={16} /> Novo usuário
             </button>
           </div>
-          <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-center text-sm text-text-3">
-            Nenhum usuário cadastrado
-          </div>
+          <EmptySection icon={<Inbox size={20} />} title="Nenhum usuário cadastrado" buttonLabel="Novo usuário" onClick={() => {}} />
         </Tabs.Content>
       </Tabs.Root>
     </div>

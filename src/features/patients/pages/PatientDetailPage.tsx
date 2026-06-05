@@ -30,10 +30,10 @@ export default function PatientDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-5 w-24 rounded-lg bg-bg-2" />
+        <div className="h-5 w-24 rounded-lg bg-bg-2 animate-shimmer" />
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="h-48 rounded-[var(--radius-xl)] bg-bg-2 lg:col-span-2" />
-          <div className="h-48 rounded-[var(--radius-xl)] bg-bg-2" />
+          <div className="h-48 rounded-[var(--radius-xl)] bg-bg-2 animate-shimmer" />
+          <div className="h-48 rounded-[var(--radius-xl)] bg-bg-2 animate-shimmer" />
         </div>
       </div>
     )

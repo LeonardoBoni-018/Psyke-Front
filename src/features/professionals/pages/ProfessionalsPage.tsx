@@ -138,8 +138,10 @@ export default function ProfessionalsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {professionals.map((professional) => (
-            <ProfessionalCard key={professional.id} professional={professional} />
+          {professionals.map((professional, i) => (
+            <div key={professional.id} className="item-enter" style={{ animationDelay: `${i * 40}ms` }}>
+              <ProfessionalCard professional={professional} />
+            </div>
           ))}
         </div>
       )}

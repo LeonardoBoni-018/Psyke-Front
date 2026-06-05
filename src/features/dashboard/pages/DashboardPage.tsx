@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Clock, Users, DollarSign, AlertCircle, CheckCircle2,
   CalendarPlus, UserPlus, Search, ChevronRight, RefreshCw,
@@ -8,6 +9,22 @@ import { useDashboardSummary, useTodaySessions } from '../hooks/useDashboard'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { AppointmentResponse } from '@/types/appointment'
 import type { AppointmentStatus } from '@/types/status'
+
+function useCountUp(target: number, duration = 600) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!target && target !== 0) return
+    let start = 0
+    const step = target / (duration / 16)
+    const timer = setInterval(() => {
+      start += step
+      if (start >= target) { setCount(target); clearInterval(timer) }
+      else setCount(Math.floor(start))
+    }, 16)
+    return () => clearInterval(timer)
+  }, [target, duration])
+  return count
+}
 
 function greeting() {
   const h = new Date().getHours()
@@ -36,9 +53,11 @@ const BAR_COLORS: Record<AppointmentStatus, string> = {
   NO_SHOW:   'var(--danger)',
 }
 
-function MetricBlock({ label, value, sub, accent }: {
-  label: string; value: string | number; sub?: string; accent?: string
+function MetricBlock({ label, value, sub, accent, countUp }: {
+  label: string; value: string | number; sub?: string; accent?: string; countUp?: boolean
 }) {
+  const count = useCountUp(typeof value === 'number' ? value : 0)
+  const display = countUp && typeof value === 'number' ? count : value
   return (
     <div style={{ padding: '20px 0' }}>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
@@ -47,7 +66,7 @@ function MetricBlock({ label, value, sub, accent }: {
       </div>
       <div style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: accent ?? 'var(--text-1)',
         lineHeight: 1, marginBottom: 4 }}>
-        {value}
+        {display}
       </div>
       {sub && (
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)' }}>
@@ -247,6 +266,7 @@ export default function DashboardPage() {
                     value={summary?.todayAppointments ?? sessions.length}
                     sub={`${confirmed} confirmadas`}
                     accent="var(--text-1)"
+                    countUp
                   />
                   <div style={{ height: 1, background: 'var(--border)' }} />
                   <MetricBlock
@@ -254,12 +274,14 @@ export default function DashboardPage() {
                     value={summary?.appointmentsByStatus?.SCHEDULED ?? pending}
                     sub="aguardando conf."
                     accent={pending > 0 ? 'var(--amber)' : 'var(--text-1)'}
+                    countUp
                   />
                   <div style={{ height: 1, background: 'var(--border)' }} />
                   <MetricBlock
                     label="Pacientes ativos"
                     value={summary?.totalPatients ?? '—'}
                     accent="var(--text-1)"
+                    countUp={typeof summary?.totalPatients === 'number'}
                   />
                 </>
               )}
@@ -412,12 +434,13 @@ export default function DashboardPage() {
               <div>
                 {sessions
                   .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-                  .map((session) => (
-                    <SessionRow
-                      key={session.id}
-                      session={session}
-                      onClick={() => navigate('/agenda')}
-                    />
+                  .map((session, i) => (
+                    <div key={session.id} className="item-enter" style={{ animationDelay: `${i * 40}ms` }}>
+                      <SessionRow
+                        session={session}
+                        onClick={() => navigate('/agenda')}
+                      />
+                    </div>
                   ))}
               </div>
             )}

@@ -32,8 +32,18 @@ export default function ReportsPage() {
 
       {isLoading ? (
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="h-72 rounded-[var(--radius-xl)] bg-bg-2" />
-          <div className="h-72 rounded-[var(--radius-xl)] bg-bg-2" />
+          <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+            <div className="animate-shimmer h-4 w-1/3 rounded" />
+            <div className="animate-shimmer h-8 w-1/2 rounded" />
+            <div className="animate-shimmer mt-2 h-3 w-2/3 rounded" />
+            <div className="animate-shimmer mt-4 h-24 w-full rounded" />
+          </div>
+          <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+            <div className="animate-shimmer h-4 w-1/3 rounded" />
+            <div className="animate-shimmer h-8 w-1/2 rounded" />
+            <div className="animate-shimmer mt-2 h-3 w-2/3 rounded" />
+            <div className="animate-shimmer mt-4 h-24 w-full rounded" />
+          </div>
         </div>
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">

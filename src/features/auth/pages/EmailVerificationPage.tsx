@@ -29,7 +29,7 @@ export default function EmailVerificationPage() {
   }, [token])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-0 p-4">
+    <div className="page-enter flex min-h-screen items-center justify-center bg-bg-0 p-4">
       <div className="w-full max-w-md space-y-6 text-center">
         {status === 'loading' && (
           <div className="space-y-4">
