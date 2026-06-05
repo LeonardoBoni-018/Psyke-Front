@@ -42,8 +42,8 @@ export async function archiveProntuario(id: string): Promise<ProntuarioResponse>
   return response.data
 }
 
-export async function addEvolucao(data: CreateEvolucaoRequest): Promise<EvolucaoClinicaResponse> {
-  const response = await api.post<EvolucaoClinicaResponse>(`/prontuarios/${data.prontuarioId}/evolucoes`, data)
+export async function addEvolucao(prontuarioId: string, data: Omit<CreateEvolucaoRequest, 'prontuarioId'>): Promise<EvolucaoClinicaResponse> {
+  const response = await api.post<EvolucaoClinicaResponse>(`/prontuarios/${prontuarioId}/evolucoes`, data)
   return response.data
 }
 

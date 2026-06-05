@@ -72,7 +72,7 @@ export function useEvolucoes(prontuarioId: string) {
 export function useAddEvolucao() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: CreateEvolucaoRequest) => addEvolucao(data),
+    mutationFn: ({ prontuarioId, ...data }: CreateEvolucaoRequest) => addEvolucao(prontuarioId, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PRONTUARIO_KEY }),
   })
 }

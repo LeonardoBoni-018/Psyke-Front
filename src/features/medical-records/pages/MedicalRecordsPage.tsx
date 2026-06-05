@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, FileText, Plus, Save, Archive, Check, AlertCircle } from 'lucide-react'
+import { ArrowLeft, FileText, Plus, Save, Archive, AlertCircle } from 'lucide-react'
 import { usePatient } from '@/features/patients/hooks/usePatient'
 import {
   useProntuarioByPatient,
@@ -28,13 +28,8 @@ function EvolucaoCard({ evolucao }: { evolucao: EvolucaoClinicaResponse }) {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-text-1 font-mono">
-            {format(new Date(evolucao.sessionDate), 'dd/MM/yyyy')}
+            {format(new Date(evolucao.createdAt), 'dd/MM/yyyy')}
           </span>
-          {evolucao.signed && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 text-[11px] font-medium text-teal font-mono">
-              <Check size={11} /> Assinado
-            </span>
-          )}
         </div>
       </div>
       <div className="space-y-3">
@@ -55,14 +50,14 @@ function EvolucaoCard({ evolucao }: { evolucao: EvolucaoClinicaResponse }) {
           <p className="mt-0.5 text-sm text-text-2 leading-relaxed">{evolucao.plan}</p>
         </div>
       </div>
-      {evolucao.techniques.length > 0 && (
+      {evolucao.techniques && (
         <div className="mt-4 flex flex-wrap gap-1.5">
-          {evolucao.techniques.map((t, i) => (
+          {evolucao.techniques.split(',').map((t, i) => (
             <span
               key={i}
               className="rounded-md bg-bg-2 px-2 py-0.5 text-[11px] text-text-3 font-mono"
             >
-              {t}
+              {t.trim()}
             </span>
           ))}
         </div>
@@ -138,7 +133,7 @@ export default function MedicalRecordsPage() {
     developmentalHistory: '',
   })
   const [evolucaoForm, setEvolucaoForm] = useState({
-    sessionDate: format(new Date(), 'yyyy-MM-dd'),
+    appointmentId: '',
     subjective: '',
     objective: '',
     assessment: '',
@@ -193,20 +188,18 @@ export default function MedicalRecordsPage() {
     addEvolucaoMutation.mutate(
       {
         prontuarioId: prontuario.id,
-        sessionDate: evolucaoForm.sessionDate,
+        appointmentId: evolucaoForm.appointmentId,
         subjective: evolucaoForm.subjective,
         objective: evolucaoForm.objective,
         assessment: evolucaoForm.assessment,
         plan: evolucaoForm.plan,
-        techniques: evolucaoForm.techniques
-          ? evolucaoForm.techniques.split(',').map((t) => t.trim()).filter(Boolean)
-          : undefined,
+        techniques: evolucaoForm.techniques || undefined,
       } satisfies CreateEvolucaoRequest,
       {
         onSuccess: () => {
           setShowEvolucaoForm(false)
           setEvolucaoForm({
-            sessionDate: format(new Date(), 'yyyy-MM-dd'),
+            appointmentId: '',
             subjective: '',
             objective: '',
             assessment: '',
@@ -690,12 +683,13 @@ export default function MedicalRecordsPage() {
             <h3 className="mb-4 text-sm font-semibold text-text-1">Nova evolução clínica</h3>
             <form onSubmit={handleAddEvolucao} className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Data da sessão</label>
+                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">ID do agendamento</label>
                 <input
-                  type="date"
-                  value={evolucaoForm.sessionDate}
-                  onChange={(e) => setEvolucaoForm({ ...evolucaoForm, sessionDate: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal"
+                  type="text"
+                  value={evolucaoForm.appointmentId}
+                  onChange={(e) => setEvolucaoForm({ ...evolucaoForm, appointmentId: e.target.value })}
+                  placeholder="UUID do agendamento"
+                  className="mt-1 w-full rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal font-mono"
                 />
               </div>
               <div>

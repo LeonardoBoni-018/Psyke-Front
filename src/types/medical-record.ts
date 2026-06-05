@@ -32,25 +32,24 @@ export interface UpdateProntuarioRequest {
 export interface EvolucaoClinicaResponse {
   id: string
   prontuarioId: string
+  appointmentId: string
   professionalId: string
-  sessionDate: string
   subjective: string
   objective: string
   assessment: string
   plan: string
-  techniques: string[]
-  signed: boolean
+  techniques: string
   createdAt: string
 }
 
 export interface CreateEvolucaoRequest {
   prontuarioId: string
-  sessionDate: string
+  appointmentId: string
   subjective: string
   objective: string
   assessment: string
   plan: string
-  techniques?: string[]
+  techniques?: string
 }
 
 export interface AnamneseResponse {
