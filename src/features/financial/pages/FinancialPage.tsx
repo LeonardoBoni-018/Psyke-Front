@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, DollarSign, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { BalanceSummary } from '@/features/financial/components/BalanceSummary/BalanceSummary'
 import { ChargeTable } from '@/features/financial/components/ChargeTable/ChargeTable'
 import { ChargeToolbar } from '@/features/financial/components/ChargeToolbar/ChargeToolbar'
@@ -79,25 +80,25 @@ export default function FinancialPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-2 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-text-3">Financeiro</p>
-          <h1 className="mt-2 text-3xl font-semibold text-text-1">Gestão de cobranças</h1>
-          <p className="mt-2 text-sm text-text-3">Monitore receitas, faturas em aberto e guias de pagamento.</p>
+      <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
+            <DollarSign size={20} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-serif text-text-1">Financeiro</h1>
+            <p className="mt-1 text-sm text-text-3">Monitore receitas, faturas em aberto e guias de pagamento.</p>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-3 font-semibold text-bg-0 transition hover:bg-teal-dim"
-        >
-          <Plus className="h-4 w-4" /> Nova cobrança
-        </button>
+        <Button size="md" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)}>
+          Nova cobrança
+        </Button>
       </div>
 
       <div className="grid gap-6">
         {summaryQuery.data ? <BalanceSummary summary={summaryQuery.data} /> : (
           summaryQuery.isLoading ? (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+            <div className="page-enter rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
               <div className="flex gap-8">
                 <div className="space-y-2">
                   <div className="animate-shimmer h-3 w-16 rounded" />
@@ -114,8 +115,9 @@ export default function FinancialPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 text-center text-sm text-text-3">
-              Resumo financeiro indisponível.
+            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
+              <AlertCircle size={22} className="text-text-3 opacity-50" />
+              <p className="text-sm text-text-3">Resumo financeiro indisponível</p>
             </div>
           )
         )}
@@ -136,14 +138,14 @@ export default function FinancialPage() {
         <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold text-text-1">Cobranças</h2>
+              <h2 className="text-lg font-serif text-text-1">Cobranças</h2>
               <p className="text-sm text-text-3">Visualize e gerencie todas as faturas da clínica.</p>
             </div>
             <div className="text-sm text-text-3">Total de cobranças: {totalCount}</div>
           </div>
 
           {loading ? (
-            <div className="space-y-3 p-4">
+            <div className="page-enter space-y-3 p-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4" style={{ opacity: 1 - i * 0.15 }}>
                   <div className="animate-shimmer h-4 w-32 rounded" />
@@ -162,24 +164,14 @@ export default function FinancialPage() {
           )}
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-text-3">Página {pageIndex + 1} de {pagination.totalPages}</p>
+            <p className="text-sm text-text-3 font-mono">Página {pageIndex + 1} de {pagination.totalPages}</p>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={!pagination.hasPrevious}
-                onClick={() => setPageIndex((current) => Math.max(current - 1, 0))}
-                className="rounded-xl border border-border bg-bg-2 px-4 py-2 text-sm text-text-2 transition hover:border-border-hi disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <button
-                type="button"
-                disabled={!pagination.hasNext}
-                onClick={() => setPageIndex((current) => current + 1)}
-                className="rounded-xl border border-border bg-bg-2 px-4 py-2 text-sm text-text-2 transition hover:border-border-hi disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Próxima
-              </button>
+              <Button variant="ghost" size="sm" disabled={!pagination.hasPrevious} onClick={() => setPageIndex((current) => Math.max(current - 1, 0))}>
+                <ChevronLeft size={14} /> Anterior
+              </Button>
+              <Button variant="ghost" size="sm" disabled={!pagination.hasNext} onClick={() => setPageIndex((current) => current + 1)}>
+                Próxima <ChevronRight size={14} />
+              </Button>
             </div>
           </div>
         </div>
