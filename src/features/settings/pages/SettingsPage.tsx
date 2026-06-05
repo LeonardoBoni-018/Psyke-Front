@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import * as Tabs from '@radix-ui/react-tabs'
-import { Building2, DoorOpen, Users, Plus, Inbox } from 'lucide-react'
+import { Building2, DoorOpen, Users, Plus, Inbox, Settings } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 function EmptySection({ icon, title, buttonLabel, onClick }: { icon: React.ReactNode; title: string; buttonLabel?: string; onClick?: () => void }) {
   return (
@@ -10,13 +11,9 @@ function EmptySection({ icon, title, buttonLabel, onClick }: { icon: React.React
       </div>
       <p className="text-sm text-text-3">{title}</p>
       {buttonLabel && onClick && (
-        <button
-          type="button"
-          onClick={onClick}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-2 px-3 py-1.5 text-[12px] text-text-2 transition hover:border-border-hi hover:text-text-1"
-        >
+        <Button variant="ghost" size="sm" className="mt-4" onClick={onClick}>
           <Plus size={13} /> {buttonLabel}
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -27,7 +24,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-serif text-text-1">Configurações</h1>
+      <div className="flex items-start gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
+        <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
+          <Settings size={20} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-serif text-text-1">Configurações</h1>
+          <p className="mt-1 text-sm text-text-3">Gerencie os dados da clínica, salas e usuários</p>
+        </div>
+      </div>
 
       <Tabs.Root value={tab} onValueChange={setTab} className="space-y-6">
         <Tabs.List className="flex gap-1 rounded-xl border border-border bg-bg-2 p-1">
@@ -61,9 +66,9 @@ export default function SettingsPage() {
         <Tabs.Content value="rooms" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-serif text-text-1">Salas</h2>
-            <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90">
+            <Button size="sm" onClick={() => {}}>
               <Plus size={16} /> Nova sala
-            </button>
+            </Button>
           </div>
           <EmptySection icon={<DoorOpen size={20} />} title="Nenhuma sala cadastrada" buttonLabel="Nova sala" onClick={() => {}} />
         </Tabs.Content>
@@ -71,9 +76,9 @@ export default function SettingsPage() {
         <Tabs.Content value="users" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-serif text-text-1">Usuários</h2>
-            <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90">
+            <Button size="sm" onClick={() => {}}>
               <Plus size={16} /> Novo usuário
-            </button>
+            </Button>
           </div>
           <EmptySection icon={<Inbox size={20} />} title="Nenhum usuário cadastrado" buttonLabel="Novo usuário" onClick={() => {}} />
         </Tabs.Content>
