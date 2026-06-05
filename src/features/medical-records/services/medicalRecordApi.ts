@@ -12,8 +12,12 @@ import type {
 } from '@/types/medical-record'
 
 export async function findProntuarioByPatient(patientId: string): Promise<ProntuarioResponse[]> {
-  const response = await api.get<ProntuarioResponse[]>('/prontuarios', { params: { patientId } })
-  return response.data
+  try {
+    const response = await api.get<ProntuarioResponse[]>('/prontuarios', { params: { patientId } })
+    return response.data
+  } catch {
+    return []
+  }
 }
 
 export async function findProntuarioById(id: string): Promise<ProntuarioResponse> {
@@ -58,8 +62,12 @@ export async function createAnamnese(data: CreateAnamneseRequest): Promise<Anamn
 }
 
 export async function findAnamnese(prontuarioId: string): Promise<AnamneseResponse | null> {
-  const response = await api.get<AnamneseResponse>(`/prontuarios/${prontuarioId}/anamnese`)
-  return response.data
+  try {
+    const response = await api.get<AnamneseResponse>(`/prontuarios/${prontuarioId}/anamnese`)
+    return response.data
+  } catch {
+    return null
+  }
 }
 
 export async function updateAnamnese(prontuarioId: string, data: UpdateAnamneseRequest): Promise<AnamneseResponse> {
