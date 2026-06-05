@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ArrowLeft, FileText, Plus, Save, Archive, Check, AlertCircle } from 'lucide-react'
 import { usePatient } from '@/features/patients/hooks/usePatient'
-import { useAuthStore } from '@/features/auth/store/authStore'
 import {
   useProntuarioByPatient,
   useCreateProntuario,
@@ -91,7 +90,6 @@ function SubmitButton({ loading, children }: { loading: boolean; children: React
 
 export default function MedicalRecordsPage() {
   const { id } = useParams<{ id: string }>()
-  const user = useAuthStore((state) => state.user)
   const { data: patient, isLoading: patientLoading, isError: patientError } = usePatient(id!)
 
   const {
@@ -150,11 +148,9 @@ export default function MedicalRecordsPage() {
 
   function handleCreateProntuario(e: React.FormEvent) {
     e.preventDefault()
-    if (!user) return
     createProntuarioMutation.mutate(
       {
         patientId: id!,
-        professionalId: user.id,
         allergies: createForm.allergies || undefined,
         chronicConditions: createForm.chronicConditions || undefined,
         medications: createForm.medications || undefined,

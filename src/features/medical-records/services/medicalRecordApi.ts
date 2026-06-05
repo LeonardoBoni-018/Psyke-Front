@@ -14,7 +14,7 @@ import type {
 
 export async function findProntuarioByPatient(patientId: string): Promise<ProntuarioResponse[]> {
   try {
-    const response = await api.get<ProntuarioResponse[]>(`/patients/${patientId}/prontuarios`)
+    const response = await api.get<ProntuarioResponse[]>(`/prontuarios/patient/${patientId}`)
     return response.data
   } catch (err) {
     if (isAxiosError(err) && err.response?.status === 404) return []

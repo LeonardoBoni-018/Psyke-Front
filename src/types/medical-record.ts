@@ -15,7 +15,7 @@ export interface ProntuarioResponse {
 
 export interface CreateProntuarioRequest {
   patientId: string
-  professionalId: string
+  professionalId?: string
   allergies?: string
   chronicConditions?: string
   medications?: string
