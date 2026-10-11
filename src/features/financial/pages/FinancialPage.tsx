@@ -95,7 +95,7 @@ export default function FinancialPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         {summaryQuery.data ? <BalanceSummary summary={summaryQuery.data} /> : (
           summaryQuery.isLoading ? (
             <div className="page-enter rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
@@ -135,8 +135,8 @@ export default function FinancialPage() {
           }}
         />
 
-        <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-4 shadow-sm sm:p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
             <div>
               <h2 className="text-lg font-serif text-text-1">Cobranças</h2>
               <p className="text-sm text-text-3">Visualize e gerencie todas as faturas da clínica.</p>

@@ -11,7 +11,7 @@ import {
   findAnamnese,
   updateAnamnese,
 } from '@/features/medical-records/services/medicalRecordApi'
-import type { CreateProntuarioRequest, UpdateProntuarioRequest, CreateEvolucaoRequest, CreateAnamneseRequest, UpdateAnamneseRequest } from '@/types/medical-record'
+import type { ProntuarioResponse, CreateProntuarioRequest,UpdateProntuarioRequest, CreateEvolucaoRequest, CreateAnamneseRequest, UpdateAnamneseRequest } from '@/types/medical-record'
 
 export const PRONTUARIO_KEY = ['prontuario'] as const
 

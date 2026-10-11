@@ -36,10 +36,16 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+/** Login screen is for guests only: signed-in users go straight to the app. */
+function GuestRoute({ children }: { children: ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated())
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>
+}
+
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <GuestRoute><LoginPage /></GuestRoute>,
   },
   {
     path: '/forgot-password',

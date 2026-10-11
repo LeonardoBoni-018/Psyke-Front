@@ -6,6 +6,8 @@ interface PatientListParams {
   page?: number
   size?: number
   sort?: string
+  q?: string
+  status?: string
 }
 
 export async function listPatients(params?: PatientListParams): Promise<PaginatedResponse<PatientResponse>> {

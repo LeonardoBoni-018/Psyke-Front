@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { format } from 'date-fns'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { formatDate } from '@/lib/date'
 import {
   flexRender,
   getCoreRowModel,
@@ -12,6 +12,7 @@ import { Search, Plus, ChevronLeft, ChevronRight, Users, RefreshCw } from 'lucid
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { usePatients } from '@/features/patients/hooks/usePatients'
+import { useDebounce } from '@/hooks/useDebounce'
 import type { PatientResponse } from '@/types/patient'
 
 const statusOptions = [
@@ -24,24 +25,22 @@ const columnHelper = createColumnHelper<PatientResponse>()
 
 export default function PatientsPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  // The topbar search sends people here with ?q=...; the field stays editable afterwards.
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(0)
+  const debouncedSearch = useDebounce(search.trim(), 300)
 
-  const { data, isLoading, isError } = usePatients({ page, size: 10 })
+  // Search and status run on the server so they cover every page, not just the 10 rows on screen.
+  const { data, isLoading, isError, isFetching } = usePatients({
+    page,
+    size: 10,
+    q: debouncedSearch || undefined,
+    status: statusFilter || undefined,
+  })
 
-  const filteredData = useMemo(() => {
-    if (!data?.content) return []
-    let items = data.content
-    if (statusFilter) {
-      items = items.filter((p) => p.status === statusFilter)
-    }
-    if (search) {
-      const q = search.toLowerCase()
-      items = items.filter((p) => p.fullName.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q))
-    }
-    return items
-  }, [data, statusFilter, search])
+  const filteredData = useMemo(() => data?.content ?? [], [data])
 
   const columns = useMemo(
     () => [
@@ -69,7 +68,7 @@ export default function PatientsPage() {
           const date = info.getValue()
           return (
             <span className="text-text-2 text-sm">
-              {date ? format(new Date(date), 'dd/MM/yyyy') : '—'}
+              {formatDate(date)}
             </span>
           )
         },
@@ -80,7 +79,7 @@ export default function PatientsPage() {
           const date = info.getValue()
           return (
             <span className="text-text-2 text-sm">
-              {date ? format(new Date(date), 'dd/MM/yyyy') : '—'}
+              {formatDate(date)}
             </span>
           )
         },
@@ -153,13 +152,15 @@ export default function PatientsPage() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-            placeholder="Buscar por nome ou email..."
-            className="w-64 bg-transparent text-sm text-text-1 outline-none placeholder:text-text-3"
+            aria-label="Buscar paciente"
+            placeholder="Buscar por nome, e-mail, CPF ou telefone..."
+            className="w-56 bg-transparent sm:w-72 text-sm text-text-1 outline-none placeholder:text-text-3"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
+          aria-label="Filtrar por status"
           className="rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal focus:shadow-[0_0_0_3px_var(--teal-10)]"
         >
           {statusOptions.map((opt) => (
@@ -182,7 +183,7 @@ export default function PatientsPage() {
           </Button>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[var(--radius-xl)] border border-border bg-bg-1">
+        <div className={`table-scroll rounded-[var(--radius-xl)] border border-border bg-bg-1 transition-opacity ${isFetching ? 'opacity-70' : ''}`}>
           <table className="w-full">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -203,6 +204,14 @@ export default function PatientsPage() {
                 <tr
                   key={row.id}
                   onClick={() => handleRowClick(row.original.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleRowClick(row.original.id)
+                    }
+                  }}
+                  tabIndex={0}
+                  aria-label={`Abrir ${row.original.fullName}`}
                   className="item-enter cursor-pointer border-b border-border/50 transition hover:bg-bg-2/50 last:border-0"
                   style={{ animationDelay: `${row.index * 35}ms` }}
                 >
@@ -220,7 +229,7 @@ export default function PatientsPage() {
 
       <div className="flex items-center justify-between pt-1">
         <span className="text-[12px] text-text-3 font-mono">
-          Mostrando {filteredData.length} de {data?.totalElements ?? 0}
+          {filteredData.length} de {data?.totalElements ?? 0}
         </span>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatCurrency } from '@/lib/currency'
 import { useNavigate } from 'react-router-dom'
 import { User, Plus, CheckCircle, XCircle, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -35,7 +36,7 @@ function ProfessionalCard({ professional }: { professional: ProfessionalResponse
         </div>
         <div>
           <p className="text-[11px] uppercase tracking-[0.1em] text-text-3">Valor sessão</p>
-          <p className="text-text-1">R$ {professional.sessionValue?.toFixed(2) ?? '—'}</p>
+          <p className="text-text-1">{formatCurrency(professional.sessionValue)}</p>
         </div>
         <div>
           <p className="text-[11px] uppercase tracking-[0.1em] text-text-3">Duração</p>

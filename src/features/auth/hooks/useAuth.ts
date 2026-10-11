@@ -10,6 +10,7 @@ export function useLogin() {
   const setUser = useAuthStore((state) => state.setUser)
 
   return useMutation({
+    meta: { silent: true }, // LoginPage shows the error inline
     mutationFn: async (data: LoginRequest) => {
       const response = await loginApi(data)
       return { ...response, tenantId: data.tenantId, email: data.email }

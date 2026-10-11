@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { formatDate } from '@/lib/date'
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Loader2 } from 'lucide-react'
 import type { Charge } from '@/types/financial'
@@ -32,7 +33,7 @@ export function ChargeTable({ charges, onMarkPaid, onExport, busyId }: ChargeTab
       }),
       columnHelper.accessor('dueDate', {
         header: 'Vencimento',
-        cell: (info) => <span>{new Date(info.getValue()).toLocaleDateString('pt-BR')}</span>,
+        cell: (info) => <span>{formatDate(info.getValue())}</span>,
       }),
       columnHelper.accessor('paid', {
         header: 'Status',
@@ -88,7 +89,7 @@ export function ChargeTable({ charges, onMarkPaid, onExport, busyId }: ChargeTab
   })
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-xl)] border border-border bg-bg-1">
+    <div className="table-scroll rounded-[var(--radius-xl)] border border-border bg-bg-1">
       <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
         <thead className="bg-bg-1">
           {table.getHeaderGroups().map((headerGroup) => (

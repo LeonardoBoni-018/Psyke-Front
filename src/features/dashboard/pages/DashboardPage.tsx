@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatCurrency } from '@/lib/currency'
 import { useNavigate } from 'react-router-dom'
 import { Clock, Users, DollarSign, AlertCircle, CheckCircle2,
   CalendarPlus, UserPlus, Search, ChevronRight, RefreshCw,
@@ -78,6 +79,21 @@ function MetricBlock({ label, value, sub, accent, countUp }: {
   )
 }
 
+/** Makes a non-button element keyboard-operable (Enter/Space) with the right role. */
+function clickable(handler: () => void) {
+  return {
+    role: 'button' as const,
+    tabIndex: 0,
+    onClick: handler,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handler()
+      }
+    },
+  }
+}
+
 function SessionRow({ session, onClick }: { session: AppointmentResponse; onClick: () => void }) {
   const status = session.status as AppointmentStatus
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.SCHEDULED
@@ -85,7 +101,7 @@ function SessionRow({ session, onClick }: { session: AppointmentResponse; onClic
 
   return (
     <div
-      onClick={onClick}
+      {...clickable(onClick)}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '10px 20px', borderBottom: '1px solid var(--border)',
@@ -130,10 +146,11 @@ function ActionCard({ icon, label, description, onClick, accent }: {
   onClick: () => void; accent?: string
 }) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
       style={{
-        flex: 1, padding: '18px 20px', cursor: 'pointer',
+        width: '100%', height: '100%', textAlign: 'left', padding: '18px 20px', cursor: 'pointer',
         border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-1)', transition: 'all 150ms', display: 'flex',
         flexDirection: 'column', gap: 8,
@@ -154,7 +171,7 @@ function ActionCard({ icon, label, description, onClick, accent }: {
       <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
         {description}
       </p>
-    </div>
+    </button>
   )
 }
 
@@ -220,7 +237,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="dash-grid">
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <div style={{
@@ -283,7 +300,7 @@ export default function DashboardPage() {
           <div style={{ height: 12 }} />
 
           <div
-            onClick={() => navigate('/patients')}
+            {...clickable(() => navigate('/patients'))}
             style={{
               background: 'var(--bg-1)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
@@ -312,7 +329,7 @@ export default function DashboardPage() {
           <div style={{ height: 12 }} />
 
           <div
-            onClick={() => navigate('/financial')}
+            {...clickable(() => navigate('/financial'))}
             style={{
               background: 'var(--bg-1)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
@@ -330,7 +347,7 @@ export default function DashboardPage() {
               marginBottom: 8, padding: '4px 8px', background: 'rgba(14,196,160,0.1)',
               borderRadius: 4, display: 'inline-block' }}>
               {(summary?.pendingAmount ?? 0) > 0
-                ? `R$ ${Number(summary?.pendingAmount ?? 0).toFixed(2)} pendentes`
+                ? `${formatCurrency(summary?.pendingAmount ?? 0)} pendentes`
                 : 'Em dia'}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8,
@@ -364,7 +381,7 @@ export default function DashboardPage() {
                   </span>
                 )}
               </div>
-              <span onClick={() => navigate('/agenda')} style={{
+              <span {...clickable(() => navigate('/agenda'))} style={{
                 fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
                 transition: 'opacity 150ms',
@@ -445,13 +462,13 @@ export default function DashboardPage() {
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
                 textTransform: 'uppercase', letterSpacing: '0.1em' }}>Acesso rápido</span>
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="dash-actions">
               {[
                 { icon: <CalendarPlus size={16} />, label: 'Agendar sessão', desc: 'Criar novo agendamento com slot disponível',                 path: '/agenda/new', accent: 'var(--teal)' },
                 { icon: <UserPlus size={16} />, label: 'Novo paciente', desc: 'Cadastrar paciente e abrir prontuário', path: '/patients/new', accent: 'var(--info)' },
                 { icon: <Search size={16} />, label: 'Buscar prontuário', desc: 'Acessar evoluções e anamnese', path: '/patients', accent: 'var(--amber)' },
               ].map((card, i) => (
-                <div key={card.label} className="item-enter" style={{ flex: 1, animationDelay: `${i * 50}ms` }}>
+                <div key={card.label} className="item-enter" style={{ animationDelay: `${i * 50}ms` }}>
                   <ActionCard
                     icon={card.icon}
                     label={card.label}

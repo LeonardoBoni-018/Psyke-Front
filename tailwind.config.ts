@@ -1,31 +1,43 @@
 import type { Config } from 'tailwindcss'
 
+/**
+ * Design tokens live in CSS variables (globals.css). Tailwind can only apply opacity modifiers
+ * (`bg-teal/10`, `border-border/50`) to colors it can parse, so each token is wrapped in
+ * color-mix with the `<alpha-value>` placeholder. Without this, `/NN` utilities silently emit nothing.
+ */
+const token = (name: string) => `color-mix(in srgb, var(--${name}) calc(<alpha-value> * 100%), transparent)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
         bg: {
-          0: 'var(--bg-0)',
-          1: 'var(--bg-1)',
-          2: 'var(--bg-2)',
-          3: 'var(--bg-3)',
+          0: token('bg-0'),
+          1: token('bg-1'),
+          2: token('bg-2'),
+          3: token('bg-3'),
         },
-        border: 'var(--border)',
-        'border-hi': 'var(--border-hi)',
-        teal: 'var(--teal)',
-        'teal-dim': 'var(--teal-dim)',
-        amber: 'var(--amber)',
-        danger: 'var(--danger)',
-        info: 'var(--info)',
+        border: token('border'),
+        'border-hi': token('border-hi'),
+        teal: {
+          DEFAULT: token('teal'),
+          hi: token('teal-hi'),
+          dim: token('teal-dim'),
+        },
+        amber: token('amber'),
+        danger: token('danger'),
+        info: token('info'),
         text: {
-          1: 'var(--text-1)',
-          2: 'var(--text-2)',
-          3: 'var(--text-3)',
+          1: token('text-1'),
+          2: token('text-2'),
+          3: token('text-3'),
         },
       },
       boxShadow: {
         focus: '0 0 0 3px var(--teal-10)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
@@ -38,14 +50,11 @@ export default {
         serif: ['var(--font-serif)'],
         mono: ['var(--font-mono)'],
       },
-      keyframes: {
-        shimmer: {
-          '0%': { backgroundPosition: '200% 0' },
-          '100%': { backgroundPosition: '-200% 0' },
-        },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
-      animation: {
-        shimmer: 'shimmer 1.5s infinite',
+      screens: {
+        xs: '420px',
       },
     },
   },
