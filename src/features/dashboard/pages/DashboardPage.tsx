@@ -1,32 +1,15 @@
-import { useState, useEffect } from 'react'
-import { formatCurrency } from '@/lib/currency'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Clock, Users, DollarSign, AlertCircle, CheckCircle2,
-  CalendarPlus, UserPlus, Search, ChevronRight, RefreshCw,
-  WifiOff } from 'lucide-react'
-import { format } from 'date-fns'
+import { addDays, endOfDay, format, isBefore, isSameDay, isWithinInterval, parseISO, startOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Button } from '@/components/ui/Button'
-import { useDashboardSummary, useTodaySessions } from '../hooks/useDashboard'
+import { ArrowUpRight, CalendarPlus, Check, ChevronRight, RefreshCw, UserPlus, Wallet } from 'lucide-react'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useUpdateStatus } from '@/features/agenda/hooks/useAppointments'
+import { useAgendaWindow, useDashboardSummary } from '../hooks/useDashboard'
+import { useCountUp } from '@/hooks/useCountUp'
+import { formatCurrency } from '@/lib/currency'
 import type { AppointmentResponse } from '@/types/appointment'
-import type { AppointmentStatus } from '@/types/status'
-
-function useCountUp(target: number, duration = 600) {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    if (!target && target !== 0) return
-    let start = 0
-    const step = target / (duration / 16)
-    const timer = setInterval(() => {
-      start += step
-      if (start >= target) { setCount(target); clearInterval(timer) }
-      else setCount(Math.floor(start))
-    }, 16)
-    return () => clearInterval(timer)
-  }, [target, duration])
-  return count
-}
 
 function greeting() {
   const h = new Date().getHours()
@@ -35,453 +18,375 @@ function greeting() {
   return 'Boa noite'
 }
 
-function fmtTime(iso: string) {
-  return format(new Date(iso), 'HH:mm')
+const upper1 = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/** "Seg, 12 out às 09:30" */
+function whenLabel(iso: string) {
+  const d = parseISO(iso)
+  const weekday = upper1(format(d, 'EEEE', { locale: ptBR }).slice(0, 3))
+  return `${weekday}, ${format(d, 'd MMM', { locale: ptBR }).replace('.', '')} às ${format(d, 'HH:mm')}`
 }
 
-const STATUS_CONFIG: Record<AppointmentStatus, { label: string; color: string; bg: string }> = {
-  CONFIRMED: { label: 'Confirmado', color: 'var(--teal)', bg: 'rgba(14,196,160,0.1)' },
-  SCHEDULED: { label: 'Pendente', color: 'var(--amber)', bg: 'rgba(245,166,35,0.1)' },
-  DONE:      { label: 'Realizado', color: 'var(--text-3)', bg: 'rgba(74,100,120,0.1)' },
-  CANCELLED: { label: 'Cancelado', color: 'var(--danger)', bg: 'rgba(224,85,85,0.1)' },
-  NO_SHOW:   { label: 'Falta', color: 'var(--danger)', bg: 'rgba(224,85,85,0.1)' },
-}
+/* ---------- metrics ---------- */
 
-const BAR_COLORS: Record<AppointmentStatus, string> = {
-  CONFIRMED: 'var(--teal)',
-  SCHEDULED: 'var(--amber)',
-  DONE:      'var(--text-3)',
-  CANCELLED: 'var(--danger)',
-  NO_SHOW:   'var(--danger)',
-}
-
-function MetricBlock({ label, value, sub, accent, countUp }: {
-  label: string; value: string | number; sub?: string; accent?: string; countUp?: boolean
+function Metric({ label, value, format: fmt, hint, delay }: {
+  label: string
+  value: number
+  format?: (n: number) => string
+  hint?: string
+  delay: number
 }) {
-  const count = useCountUp(typeof value === 'number' ? value : 0)
-  const display = countUp && typeof value === 'number' ? count : value
+  const animated = useCountUp(value)
   return (
-    <div style={{ padding: '20px 0' }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
-        {label}
-      </div>
-      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: accent ?? 'var(--text-1)',
-        lineHeight: 1, marginBottom: 4 }}>
-        {display}
-      </div>
-      {sub && (
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)' }}>
-          {sub}
-        </div>
-      )}
+    <div className="item-enter min-w-0 px-4 py-4 sm:px-6 sm:py-5" style={{ animationDelay: `${delay}ms` }}>
+      <p className="text-[13px] text-text-2">{label}</p>
+      <p className="mt-1.5 font-display text-[26px] font-semibold leading-none tracking-tight text-text-1 tabular sm:text-[34px]">
+        {fmt ? fmt(animated) : Math.round(animated)}
+      </p>
+      {hint && <p className="mt-2 text-xs text-text-3">{hint}</p>}
     </div>
   )
 }
 
-/** Makes a non-button element keyboard-operable (Enter/Space) with the right role. */
-function clickable(handler: () => void) {
-  return {
-    role: 'button' as const,
-    tabIndex: 0,
-    onClick: handler,
-    onKeyDown: (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        handler()
-      }
-    },
-  }
-}
-
-function SessionRow({ session, onClick }: { session: AppointmentResponse; onClick: () => void }) {
-  const status = session.status as AppointmentStatus
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.SCHEDULED
-  const barColor = BAR_COLORS[status] ?? 'var(--teal)'
-
+function MetricsSkeleton() {
   return (
-    <div
-      {...clickable(onClick)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 20px', borderBottom: '1px solid var(--border)',
-        cursor: 'pointer', transition: 'background 120ms',
-      }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(14,196,160,0.04)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-    >
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-3)',
-        width: 44, flexShrink: 0 }}>
-        {fmtTime(session.startTime)}
-      </div>
-
-      <div style={{ width: 3, height: 36, borderRadius: 2, background: barColor, flexShrink: 0 }} />
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {session.notes || 'Sessão'}
+    <div className="surface grid grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="space-y-3 px-6 py-5">
+          <div className="animate-shimmer h-3 w-20 rounded" />
+          <div className="animate-shimmer h-8 w-16 rounded" />
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
-          {fmtTime(session.startTime)} – {fmtTime(session.endTime)}
-        </div>
-      </div>
-
-      <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 500,
-        padding: '2px 8px', borderRadius: 10, flexShrink: 0,
-        background: cfg.bg, color: cfg.color,
-        border: `1px solid ${cfg.color}22`,
-      }}>
-        {cfg.label}
-      </div>
-
-      <ChevronRight size={14} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+      ))}
     </div>
   )
 }
 
-function ActionCard({ icon, label, description, onClick, accent }: {
-  icon: React.ReactNode; label: string; description: string
-  onClick: () => void; accent?: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: '100%', height: '100%', textAlign: 'left', padding: '18px 20px', cursor: 'pointer',
-        border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
-        background: 'var(--bg-1)', transition: 'all 150ms', display: 'flex',
-        flexDirection: 'column', gap: 8,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = accent ?? 'var(--teal)'
-        e.currentTarget.style.background = 'var(--bg-2)'
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = 'var(--border)'
-        e.currentTarget.style.background = 'var(--bg-1)'
-      }}
-    >
-      <div style={{ color: accent ?? 'var(--teal)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        {icon}
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{label}</span>
-      </div>
-      <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>
-        {description}
-      </p>
-    </button>
-  )
-}
+/* ---------- agenda timeline ---------- */
 
-function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {
+function TimelineRow({ session, index, onOpen, now, showDate }: {
+  session: AppointmentResponse
+  index: number
+  onOpen: () => void
+  now: Date
+  /** Show the weekday/day above the time (used when the list spans several days). */
+  showDate?: boolean
+}) {
+  const start = parseISO(session.startTime)
+  const end = parseISO(session.endTime)
+  const live = session.status === 'CONFIRMED' && isWithinInterval(now, { start, end })
+  const done = session.status === 'DONE'
+  const cancelled = session.status === 'CANCELLED' || session.status === 'NO_SHOW'
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '40px 20px', gap: 12 }}>
-      <WifiOff size={28} style={{ color: 'var(--danger)', opacity: 0.6 }} />
-      <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0, textAlign: 'center' }}>
-        {message}
-      </p>
-      <button onClick={onRetry} style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '6px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-        background: 'transparent', border: '1px solid var(--border)',
-        color: 'var(--text-2)', fontSize: 12, fontFamily: 'var(--font-sans)',
-        transition: 'all 150ms',
-      }}>
-        <RefreshCw size={13} /> Tentar novamente
+    <li className="item-enter relative" style={{ animationDelay: `${index * 55}ms` }}>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="group flex w-full items-center gap-4 rounded-lg px-3 py-3 text-left transition-colors hover:bg-bg-2"
+      >
+        <span className="w-14 shrink-0 text-right">
+          {showDate && (
+            <span className="block text-xs font-medium text-brand">{`${upper1(format(start, 'EEEE', { locale: ptBR }).slice(0, 3))} ${format(start, 'd')}`}</span>
+          )}
+          <span className="block text-[15px] font-semibold text-text-1 tabular">{format(start, 'HH:mm')}</span>
+          {!showDate && <span className="block text-xs text-text-3 tabular">{format(end, 'HH:mm')}</span>}
+        </span>
+
+        <span className="relative flex h-full w-3 shrink-0 justify-center self-stretch" aria-hidden="true">
+          <span className="absolute inset-y-[-12px] w-px bg-border" />
+          <span
+            className={`relative mt-2 h-3 w-3 rounded-full border-2 ${
+              live
+                ? 'animate-pulse-live border-brand bg-brand'
+                : done
+                  ? 'border-brand bg-brand'
+                  : cancelled
+                    ? 'border-border-hi bg-bg-1'
+                    : 'border-brand bg-bg-1'
+            }`}
+          />
+        </span>
+
+        <span className="min-w-0 flex-1">
+          <span className={`block truncate text-[15px] font-medium ${cancelled ? 'text-text-3 line-through' : 'text-text-1'}`}>
+            {session.patientName ?? 'Paciente'}
+          </span>
+          <span className="block truncate text-[13px] text-text-3">
+            {[session.professionalName, session.roomName].filter(Boolean).join(' · ') || 'Sessão'}
+          </span>
+          <span className="mt-1 inline-flex sm:hidden">
+            {live ? (
+              <span className="rounded-full bg-brand px-2 py-px text-[11px] font-semibold text-on-brand">Em andamento</span>
+            ) : (
+              <StatusBadge status={session.status} size="sm" />
+            )}
+          </span>
+        </span>
+
+        <span className="hidden sm:inline-flex">
+          {live ? (
+            <span className="rounded-full bg-brand px-2.5 py-0.5 text-xs font-semibold text-on-brand">Em andamento</span>
+          ) : (
+            <StatusBadge status={session.status} size="md" />
+          )}
+        </span>
+        <ChevronRight size={16} className="hidden shrink-0 text-text-3 transition group-hover:translate-x-0.5 group-hover:text-text-2 sm:block" />
       </button>
+    </li>
+  )
+}
+
+/* ---------- 14-day chart ---------- */
+
+function SessionsChart({ appointments, today }: { appointments: AppointmentResponse[]; today: Date }) {
+  const days = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const date = addDays(startOfDay(today), i - 6)
+      const count = appointments.filter(
+        (a) => a.status !== 'CANCELLED' && isSameDay(parseISO(a.startTime), date),
+      ).length
+      return { date, count }
+    })
+  }, [appointments, today])
+
+  const max = Math.max(4, ...days.map((d) => d.count))
+  const total = days.reduce((n, d) => n + d.count, 0)
+
+  return (
+    <div className="surface p-5 sm:p-6">
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-[17px] text-text-1">Ritmo da agenda</h2>
+          <p className="mt-0.5 text-[13px] text-text-2">Sessões por dia, uma semana atrás e uma à frente</p>
+        </div>
+        <p className="text-right text-[13px] text-text-3">
+          <span className="font-display text-[22px] font-semibold text-text-1 tabular">{total}</span> sessões
+        </p>
+      </div>
+
+      <div className="flex h-[150px] items-end gap-1.5 sm:gap-2" role="img" aria-label={`${total} sessões nos últimos 7 e próximos 7 dias`}>
+        {days.map(({ date, count }, i) => {
+          const isToday = isSameDay(date, today)
+          const future = isBefore(today, startOfDay(date)) && !isToday
+          return (
+            <div key={date.toISOString()} className="group flex h-full flex-1 flex-col items-center justify-end gap-2" title={`${format(date, "EEE, d 'de' MMM", { locale: ptBR })}: ${count} sessões`}>
+              <span className="text-xs font-medium text-text-2 opacity-0 transition-opacity group-hover:opacity-100 tabular">{count || ''}</span>
+              <span
+                className={`animate-grow w-full rounded-t-md ${
+                  isToday ? 'bg-brand' : future ? 'bg-brand/30 group-hover:bg-brand/45' : 'bg-text-3/35 group-hover:bg-text-3/55'
+                }`}
+                style={{ height: `${Math.max(count ? 8 : 3, (count / max) * 100)}%`, animationDelay: `${i * 35}ms` }}
+              />
+              <span className={`text-xs ${isToday ? 'font-semibold text-brand' : 'text-text-3'}`}>
+                {format(date, 'EEEEE', { locale: ptBR }).toUpperCase()}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
+
+/* ---------- page ---------- */
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
+  const confirm = useUpdateStatus()
 
-  const {
-    data: summary, isLoading: loadingSum, isError: errorSum,
-  } = useDashboardSummary()
+  const summary = useDashboardSummary()
+  const windowQuery = useAgendaWindow()
 
-  const {
-    data: sessions = [], isLoading: loadingSess, isError: errorSess, refetch: refetchSess,
-  } = useTodaySessions()
+  const now = new Date()
+  const today = startOfDay(now)
+  const appointments = useMemo(() => windowQuery.data ?? [], [windowQuery.data])
 
-  const today = format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })
-  const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1)
-
-  const confirmed = sessions.filter(s => s.status === 'CONFIRMED').length
-  const pending = sessions.filter(s => s.status === 'SCHEDULED').length
+  const { todays, upcoming, toConfirm } = useMemo(() => {
+    const sorted = [...appointments].sort((a, b) => a.startTime.localeCompare(b.startTime))
+    const todays = sorted.filter((a) => isSameDay(parseISO(a.startTime), today))
+    const upcoming = sorted.filter(
+      (a) => parseISO(a.startTime) > endOfDay(today) && (a.status === 'SCHEDULED' || a.status === 'CONFIRMED'),
+    )
+    const toConfirm = sorted.filter((a) => a.status === 'SCHEDULED' && parseISO(a.startTime) >= today)
+    return { todays, upcoming, toConfirm }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointments])
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
+  const dateLabel = upper1(format(now, "EEEE, d 'de' MMMM", { locale: ptBR }))
+  const active = todays.filter((a) => a.status !== 'CANCELLED' && a.status !== 'NO_SHOW')
+  const remaining = active.filter((a) => a.status === 'SCHEDULED' || a.status === 'CONFIRMED').length
+
+  const headline =
+    todays.length === 0
+      ? 'Sem sessões marcadas para hoje.'
+      : remaining === 0
+        ? 'Todas as sessões de hoje foram concluídas.'
+        : `${remaining} ${remaining === 1 ? 'sessão ainda por vir' : 'sessões ainda por vir'} hoje.`
+
+  const loadingMetrics = summary.isLoading || windowQuery.isLoading
 
   return (
-    <div style={{ padding: '28px 28px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="space-y-6 pt-2 sm:pt-4">
+      <header>
+        <h1 className="text-[28px] leading-tight text-text-1 sm:text-[34px]">
+          {greeting()}
+          {firstName ? `, ${firstName}` : ''}
+        </h1>
+        <p className="mt-1 text-[15px] text-text-2">
+          {dateLabel} <span className="text-text-3">—</span> {headline}
+        </p>
+      </header>
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: 'var(--text-1)',
-            marginBottom: 2, lineHeight: 1.2 }}>
-            {greeting()}{firstName ? `, ${firstName}.` : '.'}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--teal)' }} />
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)', margin: 0 }}>
-              {todayCapitalized}
-            </p>
-          </div>
-        </div>
-        <Button size="md" icon={<CalendarPlus size={15} />} onClick={() => navigate('/agenda/new')}>
-          Nova sessão
-        </Button>
-      </div>
-
-      <div className="dash-grid">
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <div style={{
-            background: 'var(--bg-1)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-          }}>
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Clock size={13} style={{ color: 'var(--teal)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-                textTransform: 'uppercase', letterSpacing: '0.1em' }}>Hoje</span>
-            </div>
-
-            <div style={{ padding: '0 20px' }}>
-              {loadingSum ? (
-                <div style={{ padding: '20px 0' }}>
-                  {[60, 40, 50].map((w, i) => (
-                    <div key={i} style={{
-                      height: 14, width: `${w}%`, borderRadius: 4, marginBottom: 12,
-                      background: 'var(--bg-2)', position: 'relative', overflow: 'hidden',
-                    }}>
-                      <div className="animate-shimmer" style={{ position: 'absolute', inset: 0 }} />
-                    </div>
-                  ))}
-                </div>
-              ) : errorSum ? (
-                <div style={{ padding: '20px 0', textAlign: 'center' }}>
-                  <AlertCircle size={20} style={{ color: 'var(--danger)', opacity: 0.5, marginBottom: 8 }} />
-                  <p style={{ fontSize: 11, color: 'var(--text-3)', margin: 0 }}>Sem conexão</p>
-                </div>
-              ) : (
-                <>
-                  <MetricBlock
-                    label="Sessões"
-                    value={summary?.todayAppointments ?? sessions.length}
-                    sub={`${confirmed} confirmadas`}
-                    accent="var(--text-1)"
-                    countUp
-                  />
-                  <div style={{ height: 1, background: 'var(--border)' }} />
-                  <MetricBlock
-                    label="Pendentes"
-                    value={summary?.appointmentsByStatus?.SCHEDULED ?? pending}
-                    sub="aguardando conf."
-                    accent={pending > 0 ? 'var(--amber)' : 'var(--text-1)'}
-                    countUp
-                  />
-                  <div style={{ height: 1, background: 'var(--border)' }} />
-                  <MetricBlock
-                    label="Pacientes ativos"
-                    value={summary?.totalPatients ?? '—'}
-                    accent="var(--text-1)"
-                    countUp={typeof summary?.totalPatients === 'number'}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-
-          <div style={{ height: 12 }} />
-
-          <div
-            {...clickable(() => navigate('/patients'))}
-            style={{
-              background: 'var(--bg-1)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
-              transition: 'all 150ms',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hi)'; e.currentTarget.style.background = 'var(--bg-2)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-1)' }}
+      {summary.isError && windowQuery.isError ? (
+        <div className="surface flex flex-col items-center gap-3 px-6 py-14 text-center">
+          <p className="text-[15px] text-text-1">Não foi possível carregar o painel.</p>
+          <p className="max-w-sm text-[13px] text-text-3">Verifique sua conexão. Se a API estava ociosa, ela pode levar alguns segundos para acordar.</p>
+          <button
+            type="button"
+            onClick={() => { void summary.refetch(); void windowQuery.refetch() }}
+            className="mt-1 inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-bg-1 px-4 text-[13px] font-semibold text-text-1 shadow-sm transition hover:bg-bg-2"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <Users size={13} style={{ color: 'var(--info)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-                textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pacientes</span>
-            </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: 'var(--text-1)', lineHeight: 1 }}>
-              {summary?.totalPatients ?? '—'}
-            </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-              em tratamento ativo
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12,
-              fontSize: 11, color: 'var(--info)' }}>
-              Ver todos <ChevronRight size={12} />
-            </div>
-          </div>
-
-          <div style={{ height: 12 }} />
-
-          <div
-            {...clickable(() => navigate('/financial'))}
-            style={{
-              background: 'var(--bg-1)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)', padding: '16px 20px', cursor: 'pointer',
-              transition: 'all 150ms',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hi)'; e.currentTarget.style.background = 'var(--bg-2)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-1)' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <DollarSign size={13} style={{ color: 'var(--teal)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-                textTransform: 'uppercase', letterSpacing: '0.1em' }}>Financeiro</span>
-            </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
-              marginBottom: 8, padding: '4px 8px', background: 'rgba(14,196,160,0.1)',
-              borderRadius: 4, display: 'inline-block' }}>
-              {(summary?.pendingAmount ?? 0) > 0
-                ? `${formatCurrency(summary?.pendingAmount ?? 0)} pendentes`
-                : 'Em dia'}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8,
-              fontSize: 11, color: 'var(--info)' }}>
-              Ver faturas <ChevronRight size={12} />
-            </div>
-          </div>
+            <RefreshCw size={14} /> Tentar novamente
+          </button>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{
-            background: 'var(--bg-1)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '14px 20px', borderBottom: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)' }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>
-                  Sessões de hoje
-                </span>
-                {!loadingSess && sessions.length > 0 && (
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 11,
-                    padding: '1px 7px', borderRadius: 10,
-                    background: 'rgba(14,196,160,0.1)', color: 'var(--teal)',
-                  }}>
-                    {sessions.length}
-                  </span>
-                )}
-              </div>
-              <span {...clickable(() => navigate('/agenda'))} style={{
-                fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--teal)',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-                transition: 'opacity 150ms',
-              }} onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-                Ver agenda <ChevronRight size={12} />
-              </span>
-            </div>
-
-            {loadingSess ? (
-              <div style={{ padding: '8px 0' }}>
-                {[0.9, 0.7, 0.85, 0.6].map((op, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 20px',
-                    borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ width: 44, height: 14, borderRadius: 4, background: 'var(--bg-2)', position: 'relative', overflow: 'hidden' }}>
-                      <div className="animate-shimmer" style={{ position: 'absolute', inset: 0 }} />
-                    </div>
-                    <div style={{ width: 3, height: 36, borderRadius: 2, background: 'var(--bg-2)', position: 'relative', overflow: 'hidden' }}>
-                      <div className="animate-shimmer" style={{ position: 'absolute', inset: 0 }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ width: `${op * 100}%`, height: 14, borderRadius: 4, marginBottom: 6, background: 'var(--bg-2)', position: 'relative', overflow: 'hidden' }}>
-                        <div className="animate-shimmer" style={{ position: 'absolute', inset: 0 }} />
-                      </div>
-                      <div style={{ width: '40%', height: 10, borderRadius: 4, background: 'var(--bg-2)', position: 'relative', overflow: 'hidden' }}>
-                        <div className="animate-shimmer" style={{ position: 'absolute', inset: 0 }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : errorSess ? (
-              <ErrorBlock
-                message="Não foi possível carregar as sessões de hoje"
-                onRetry={() => refetchSess()}
+      ) : (
+        <>
+          {loadingMetrics ? (
+            <MetricsSkeleton />
+          ) : (
+            <section className="surface grid grid-cols-2 divide-border max-lg:[&>*:nth-child(n+3)]:border-t max-lg:[&>*:nth-child(even)]:border-l lg:grid-cols-4 lg:divide-x [&>*]:border-border" aria-label="Resumo">
+              <Metric label="Sessões hoje" value={active.length} hint={`${active.filter((a) => a.status === 'CONFIRMED').length} confirmadas`} delay={0} />
+              <Metric label="Aguardando confirmação" value={toConfirm.length} hint="nos próximos 7 dias" delay={60} />
+              <Metric label="Pacientes ativos" value={summary.data?.totalPatients ?? 0} hint={`${summary.data?.totalProfessionals ?? 0} profissionais`} delay={120} />
+              <Metric
+                label="Receita do mês"
+                value={summary.data?.monthlyRevenue ?? 0}
+                format={formatCurrency}
+                hint={`${formatCurrency(summary.data?.pendingAmount ?? 0)} a receber`}
+                delay={180}
               />
-            ) : sessions.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', padding: '48px 20px', gap: 12 }}>
-                <CheckCircle2 size={32} style={{ color: 'var(--teal)', opacity: 0.3 }} />
-                <p style={{ fontSize: 14, color: 'var(--text-3)', margin: 0 }}>
-                  Nenhuma sessão agendada para hoje
-                </p>
-                <button
-                  onClick={() => navigate('/agenda/new')}
-                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
-                    padding: '7px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                    background: 'rgba(14,196,160,0.1)', border: '1px solid rgba(14,196,160,0.3)',
-                    color: 'var(--teal)', fontSize: 12, fontFamily: 'var(--font-sans)',
-                    transition: 'all 150ms',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14,196,160,0.18)'; e.currentTarget.style.borderColor = 'var(--teal)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14,196,160,0.1)'; e.currentTarget.style.borderColor = 'rgba(14,196,160,0.3)' }}
-                >
-                  <CalendarPlus size={14} /> Agendar sessão
-                </button>
-              </div>
-            ) : (
-              <div>
-                {sessions
-                  .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-                  .map((session, i) => (
-                    <div key={session.id} className="item-enter" style={{ animationDelay: `${i * 40}ms` }}>
-                      <SessionRow
-                        session={session}
-                        onClick={() => navigate('/agenda')}
-                      />
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
+            </section>
+          )}
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--info)', opacity: 0.5 }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)',
-                textTransform: 'uppercase', letterSpacing: '0.1em' }}>Acesso rápido</span>
-            </div>
-            <div className="dash-actions">
-              {[
-                { icon: <CalendarPlus size={16} />, label: 'Agendar sessão', desc: 'Criar novo agendamento com slot disponível',                 path: '/agenda/new', accent: 'var(--teal)' },
-                { icon: <UserPlus size={16} />, label: 'Novo paciente', desc: 'Cadastrar paciente e abrir prontuário', path: '/patients/new', accent: 'var(--info)' },
-                { icon: <Search size={16} />, label: 'Buscar prontuário', desc: 'Acessar evoluções e anamnese', path: '/patients', accent: 'var(--amber)' },
-              ].map((card, i) => (
-                <div key={card.label} className="item-enter" style={{ animationDelay: `${i * 50}ms` }}>
-                  <ActionCard
-                    icon={card.icon}
-                    label={card.label}
-                    description={card.desc}
-                    onClick={() => navigate(card.path)}
-                    accent={card.accent}
-                  />
+          <div className="dash-grid">
+            <div className="min-w-0 space-y-6">
+              <section className="surface p-3 sm:p-4" aria-labelledby="today-title">
+                <div className="flex items-center justify-between px-3 pb-2 pt-2">
+                  <h2 id="today-title" className="text-[17px] text-text-1">
+                    {todays.length > 0 ? 'Agenda de hoje' : 'Próximas sessões'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/agenda', { viewTransition: true })}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[13px] font-medium text-brand transition hover:bg-brand/10"
+                  >
+                    Abrir agenda <ArrowUpRight size={14} />
+                  </button>
                 </div>
-              ))}
+
+                {windowQuery.isLoading ? (
+                  <div className="space-y-3 p-3">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="animate-shimmer h-12 rounded-lg" style={{ opacity: 1 - i * 0.2 }} />
+                    ))}
+                  </div>
+                ) : (todays.length > 0 ? todays : upcoming.slice(0, 6)).length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+                    <p className="text-[15px] text-text-1">Nada agendado por enquanto.</p>
+                    <p className="max-w-xs text-[13px] text-text-3">Marque a próxima sessão para ver a agenda do dia aqui.</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/agenda/new', { viewTransition: true })}
+                      className="mt-1 inline-flex h-9 items-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-semibold text-on-brand shadow-sm transition hover:bg-brand-hi"
+                    >
+                      <CalendarPlus size={15} /> Agendar sessão
+                    </button>
+                  </div>
+                ) : (
+                  <ul className="py-1">
+                    {(todays.length > 0 ? todays : upcoming.slice(0, 6)).map((s, i) => (
+                      <TimelineRow
+                        key={s.id}
+                        session={s}
+                        index={i}
+                        now={now}
+                        showDate={todays.length === 0}
+                        onOpen={() => navigate('/agenda', { viewTransition: true })}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <SessionsChart appointments={appointments} today={today} />
             </div>
+
+            <aside className="min-w-0 space-y-6">
+              <section className="surface p-5" aria-labelledby="attention-title">
+                <h2 id="attention-title" className="text-[17px] text-text-1">Precisa de atenção</h2>
+                <p className="mt-0.5 text-[13px] text-text-2">Sessões que ainda não foram confirmadas</p>
+
+                {windowQuery.isLoading ? (
+                  <div className="mt-4 space-y-2">
+                    {[0, 1, 2].map((i) => <div key={i} className="animate-shimmer h-12 rounded-lg" />)}
+                  </div>
+                ) : toConfirm.length === 0 ? (
+                  <div className="mt-4 flex items-center gap-3 rounded-lg bg-brand/10 px-3.5 py-3 text-[13px] text-brand">
+                    <Check size={16} className="shrink-0" /> Tudo confirmado nos próximos dias.
+                  </div>
+                ) : (
+                  <ul className="mt-3 divide-y divide-border">
+                    {toConfirm.slice(0, 5).map((s, i) => (
+                      <li key={s.id} className="item-enter flex items-center gap-3 py-3" style={{ animationDelay: `${i * 50}ms` }}>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[14px] font-medium text-text-1">{s.patientName ?? 'Paciente'}</p>
+                          <p className="text-xs text-text-3 tabular">
+                            {whenLabel(s.startTime)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={confirm.isPending && confirm.variables?.id === s.id}
+                          onClick={() => confirm.mutate({ id: s.id, data: { status: 'CONFIRMED' } })}
+                          className="inline-flex h-8 shrink-0 items-center rounded-md border border-border bg-bg-1 px-3 text-[13px] font-semibold text-text-1 shadow-sm transition hover:border-brand hover:text-brand disabled:opacity-50"
+                        >
+                          Confirmar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section className="surface p-2" aria-label="Atalhos">
+                {[
+                  { icon: <CalendarPlus size={18} />, label: 'Agendar sessão', desc: 'Escolha paciente, profissional e horário', path: '/agenda/new' },
+                  { icon: <UserPlus size={18} />, label: 'Novo paciente', desc: 'Cadastre e abra o prontuário', path: '/patients/new' },
+                  { icon: <Wallet size={18} />, label: 'Cobranças', desc: `${formatCurrency(summary.data?.pendingAmount ?? 0)} em aberto`, path: '/financial' },
+                ].map((item) => (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => navigate(item.path, { viewTransition: true })}
+                    className="group flex w-full items-center gap-3.5 rounded-lg px-3 py-3 text-left transition-colors hover:bg-bg-2"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-2 text-text-2 transition-colors group-hover:bg-brand/10 group-hover:text-brand">
+                      {item.icon}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[14px] font-medium text-text-1">{item.label}</span>
+                      <span className="block truncate text-xs text-text-3">{item.desc}</span>
+                    </span>
+                    <ChevronRight size={16} className="text-text-3 transition group-hover:translate-x-0.5" />
+                  </button>
+                ))}
+              </section>
+            </aside>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   )
 }

@@ -27,9 +27,9 @@ export function StatCard({ label, value, delta, deltaPositive, icon, onClick }: 
       onMouseLeave={e => { if (onClick) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-1)' }}}
     >
       {icon && <div style={{ position: 'absolute', top: 16, right: 16, opacity: 0.15, color: 'var(--teal)', pointerEvents: 'none' }}>{icon}</div>}
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-3)', textTransform: '', marginBottom: 10 }}>{label}</p>
       <p style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: 'var(--text-1)', lineHeight: 1, marginBottom: delta ? 6 : 0 }}>{value}</p>
-      {delta && <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: deltaPositive ? 'var(--teal)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: 4, margin: 0 }}>{deltaPositive ? '↑' : '↓'} {delta}</p>}
+      {delta && <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: deltaPositive ? 'var(--teal)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: 4, margin: 0 }}>{deltaPositive ? '↑' : '↓'} {delta}</p>}
     </div>
   )
 }

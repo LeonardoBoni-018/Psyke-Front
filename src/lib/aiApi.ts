@@ -7,7 +7,7 @@ import type {
 } from '@/types/ai'
 
 export async function suggestEvolution(data: EvolutionSuggestionRequest): Promise<EvolutionSuggestionResponse> {
-  const response = await api.post<EvolutionSuggestionResponse>('/ai/evolution/suggest', data)
+  const response = await api.post<EvolutionSuggestionResponse>('/ai/evolutions/suggest', data)
   return response.data
 }
 

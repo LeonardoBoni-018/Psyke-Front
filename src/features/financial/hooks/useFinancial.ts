@@ -1,68 +1,83 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  createCharge,
-  exportCharge,
+  cancelInvoice,
+  createInvoice,
+  exportInvoicePdf,
   getFinancialSummary,
-  listCharges,
-  markChargePaid,
+  listInvoices,
+  markInvoicePaid,
 } from '@/features/financial/services/financialApi'
-import type { ChargeListParams } from '@/features/financial/services/financialApi'
+import type { InvoiceListParams } from '@/features/financial/services/financialApi'
+import { getApiErrorMessage } from '@/lib/errors'
 
-export const FINANCIAL_CHARGES_KEY = ['financial', 'charges'] as const
+export const INVOICES_KEY = ['financial', 'invoices'] as const
 export const FINANCIAL_SUMMARY_KEY = ['financial', 'summary'] as const
 
 export function useFinancialSummary() {
   return useQuery({
     queryKey: FINANCIAL_SUMMARY_KEY,
     queryFn: getFinancialSummary,
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60,
   })
 }
 
-export function useCharges(params?: ChargeListParams) {
+export function useInvoices(params?: InvoiceListParams) {
   return useQuery({
-    queryKey: [...FINANCIAL_CHARGES_KEY, params],
-    queryFn: () => listCharges(params),
-    staleTime: 1000 * 60 * 2,
+    queryKey: [...INVOICES_KEY, params],
+    queryFn: () => listInvoices(params),
+    staleTime: 1000 * 30,
   })
 }
 
-export function useCreateCharge() {
+function useRefreshFinancial() {
   const queryClient = useQueryClient()
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: INVOICES_KEY })
+    void queryClient.invalidateQueries({ queryKey: FINANCIAL_SUMMARY_KEY })
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+  }
+}
+
+export function useCreateInvoice() {
+  const refresh = useRefreshFinancial()
   return useMutation({
-    mutationFn: createCharge,
+    mutationFn: createInvoice,
     onSuccess: () => {
-      toast.success('Cobrança criada com sucesso')
-      queryClient.invalidateQueries({ queryKey: FINANCIAL_CHARGES_KEY })
-      queryClient.invalidateQueries({ queryKey: FINANCIAL_SUMMARY_KEY })
+      toast.success('Cobrança criada')
+      refresh()
     },
-    onError: (error: Error) => {
-      toast.error('Erro ao criar cobrança', { description: error.message })
-    },
+    onError: (error) => toast.error('Não foi possível criar a cobrança', { description: getApiErrorMessage(error) }),
   })
 }
 
-export function useMarkChargePaid() {
-  const queryClient = useQueryClient()
+export function useMarkInvoicePaid() {
+  const refresh = useRefreshFinancial()
   return useMutation({
-    mutationFn: markChargePaid,
+    mutationFn: (id: string) => markInvoicePaid(id),
     onSuccess: () => {
       toast.success('Cobrança marcada como paga')
-      queryClient.invalidateQueries({ queryKey: FINANCIAL_CHARGES_KEY })
-      queryClient.invalidateQueries({ queryKey: FINANCIAL_SUMMARY_KEY })
+      refresh()
     },
-    onError: (error: Error) => {
-      toast.error('Erro ao marcar cobrança', { description: error.message })
-    },
+    onError: (error) => toast.error('Não foi possível atualizar a cobrança', { description: getApiErrorMessage(error) }),
   })
 }
 
-export function useExportCharge() {
+export function useCancelInvoice() {
+  const refresh = useRefreshFinancial()
   return useMutation({
-    mutationFn: exportCharge,
-    onError: (error: Error) => {
-      toast.error('Erro ao exportar cobrança', { description: error.message })
+    mutationFn: cancelInvoice,
+    onSuccess: () => {
+      toast.success('Cobrança cancelada')
+      refresh()
     },
+    onError: (error) => toast.error('Não foi possível cancelar a cobrança', { description: getApiErrorMessage(error) }),
+  })
+}
+
+export function useExportInvoice() {
+  return useMutation({
+    mutationFn: exportInvoicePdf,
+    onError: (error) => toast.error('Não foi possível gerar o PDF', { description: getApiErrorMessage(error) }),
   })
 }

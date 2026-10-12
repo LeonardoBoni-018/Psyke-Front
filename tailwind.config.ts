@@ -20,11 +20,18 @@ export default {
         },
         border: token('border'),
         'border-hi': token('border-hi'),
-        teal: {
-          DEFAULT: token('teal'),
-          hi: token('teal-hi'),
-          dim: token('teal-dim'),
+        brand: {
+          DEFAULT: token('brand'),
+          hi: token('brand-hi'),
+          dim: token('brand-dim'),
         },
+        // legacy alias: `teal` resolves to the brand color
+        teal: {
+          DEFAULT: token('brand'),
+          hi: token('brand-hi'),
+          dim: token('brand-dim'),
+        },
+        'on-brand': token('on-brand'),
         amber: token('amber'),
         danger: token('danger'),
         info: token('info'),
@@ -35,7 +42,8 @@ export default {
         },
       },
       boxShadow: {
-        focus: '0 0 0 3px var(--teal-10)',
+        focus: '0 0 0 3px var(--brand-20)',
+        sm: 'var(--shadow-sm)',
         md: 'var(--shadow-md)',
         lg: 'var(--shadow-lg)',
       },
@@ -47,8 +55,9 @@ export default {
       },
       fontFamily: {
         sans: ['var(--font-sans)'],
-        serif: ['var(--font-serif)'],
-        mono: ['var(--font-mono)'],
+        display: ['var(--font-display)'],
+        serif: ['var(--font-display)'],
+        mono: ['var(--font-sans)'],
       },
       transitionTimingFunction: {
         out: 'cubic-bezier(0.16, 1, 0.3, 1)',

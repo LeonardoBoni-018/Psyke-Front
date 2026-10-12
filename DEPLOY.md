@@ -69,6 +69,12 @@ A criação de clínica é pública (`POST /tenants`). Para uma clínica de demo
 API_URL=https://SUA-API.onrender.com node scripts/seed-demo.mjs
 ```
 
+Para simular uso real (mais pacientes, ~10 semanas de histórico, cobranças, prontuários e evoluções), rode em seguida:
+
+```bash
+API_URL=https://SUA-API.onrender.com DEMO_PASSWORD=... node scripts/seed-extra.mjs
+```
+
 Login: clínica `clinica-demo`, e-mail `admin@psyke.demo` (a senha está no topo do script; **troque em produção**
 com `DEMO_PASSWORD=...`).
 

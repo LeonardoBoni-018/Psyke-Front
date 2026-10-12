@@ -1,5 +1,9 @@
 import { api } from '@/lib/axios'
+import { format } from 'date-fns'
 import type { AppointmentResponse } from '@/types/appointment'
+
+/** The API stores appointment times as local date-times without a zone, so send them the same way. */
+const toLocalParam = (d: Date) => format(d, "yyyy-MM-dd'T'HH:mm:ss")
 
 export interface DashboardSummary {
   totalPatients: number
@@ -21,9 +25,14 @@ export const dashboardApi = {
     const to = new Date(today)
     to.setHours(23, 59, 59, 999)
     return api.get<AppointmentResponse[]>('/appointments', {
-      params: { from: from.toISOString(), to: to.toISOString() },
+      params: { from: toLocalParam(from), to: toLocalParam(to) },
     }).then((r) => r.data)
   },
+
+  getRange: (from: Date, to: Date) =>
+    api.get<AppointmentResponse[]>('/appointments', {
+      params: { from: toLocalParam(from), to: toLocalParam(to) },
+    }).then((r) => r.data),
 }
 
 export const getDashboardSummary = dashboardApi.getSummary

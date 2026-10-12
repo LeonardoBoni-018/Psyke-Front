@@ -6,7 +6,8 @@ export async function createTenant(data: CreateTenantRequest): Promise<TenantRes
   return response.data
 }
 
-export async function getTenantById(id: string): Promise<TenantResponse> {
-  const response = await api.get<TenantResponse>(`/tenants/${id}`)
+/** The API only exposes the signed-in user's own clinic (`/tenants/current`). */
+export async function getCurrentTenant(): Promise<TenantResponse> {
+  const response = await api.get<TenantResponse>('/tenants/current')
   return response.data
 }

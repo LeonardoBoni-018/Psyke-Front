@@ -9,15 +9,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeClasses: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-2.5 py-1.5 text-[11px]',
-  md: 'px-3.5 py-2 text-[12px]',
-  lg: 'px-4.5 py-2.5 text-[13px]',
+  sm: 'h-8 px-3 text-[13px]',
+  md: 'h-9 px-4 text-[13px]',
+  lg: 'h-11 px-5 text-sm',
 }
 
 const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-teal text-bg-0 hover:bg-[#12dbb2] border border-transparent',
-  ghost: 'bg-transparent border border-border text-text-2 hover:border-border-hi hover:text-text-1',
-  danger: 'bg-[rgba(224,85,85,0.1)] border border-danger text-danger hover:bg-[rgba(224,85,85,0.16)]',
+  primary:
+    'bg-brand text-on-brand border border-transparent shadow-sm hover:bg-brand-hi active:translate-y-px',
+  ghost:
+    'bg-bg-1 border border-border text-text-1 shadow-sm hover:border-border-hi hover:bg-bg-2 active:translate-y-px',
+  danger:
+    'bg-danger/10 border border-danger/30 text-danger hover:bg-danger/15 active:translate-y-px',
 }
 
 export function Button({
@@ -33,7 +36,7 @@ export function Button({
   return (
     <button
       type={props.type ?? 'button'}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] font-sans font-medium transition-all duration-150 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-sans font-semibold transition-[background-color,border-color,box-shadow,transform] duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

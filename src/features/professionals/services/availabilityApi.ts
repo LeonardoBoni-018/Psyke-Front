@@ -12,17 +12,17 @@ export async function getSlots(params: {
   startDate: string
   endDate: string
 }): Promise<Slot[]> {
-  const response = await api.get<Slot[]>('/availability/slots', { params })
+  const response = await api.get<Slot[]>(`/professionals/${params.professionalId}/slots`, { params: { startDate: params.startDate, endDate: params.endDate } })
   return response.data
 }
 
 export async function listAvailability(professionalId: string): Promise<ProfessionalAvailabilityResponse> {
-  const response = await api.get<ProfessionalAvailabilityResponse>(`/availability/${professionalId}`)
+  const response = await api.get<ProfessionalAvailabilityResponse>(`/professionals/${professionalId}/availability`)
   return response.data
 }
 
 export async function createAvailability(data: CreateAvailabilityRequest): Promise<ProfessionalAvailabilityResponse> {
-  const response = await api.post<ProfessionalAvailabilityResponse>('/availability', data)
+  const response = await api.post<ProfessionalAvailabilityResponse>(`/professionals/${data.professionalId}/availability`, data)
   return response.data
 }
 

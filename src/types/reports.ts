@@ -1,26 +1,28 @@
-export interface FinancialReportSummary {
-  totalRevenue: number
-  totalReceivables: number
-  totalPaid: number
-  overdueAmount: number
-  openInvoices: number
-  revenueSeries: Array<{ month: string; amount: number }>
-}
-
-export interface ClinicalReportSummary {
-  adherenceRate: number
-  activeRecords: number
+/** Matches the API's ReportSummaryResponse (`GET /reports/summary`). */
+export interface ReportSummary {
+  from: string
+  to: string
+  /** Paid revenue in the period. */
+  revenue: number
+  /** Invoices issued in the period that are still pending. */
+  pendingAmount: number
+  invoicesByStatus: Record<string, number>
+  totalAppointments: number
+  appointmentsByStatus: Record<string, number>
+  /** DONE / (DONE + NO_SHOW), 0-100. */
+  attendanceRate: number
+  /** CANCELLED / total, 0-100. */
+  cancellationRate: number
   newPatients: number
-  topDiagnoses: Array<{ name: string; count: number }>
+  activePatients: number
+  revenueByMonth: Array<{ month: string; amount: number }>
+  sessionsByProfessional: Array<{ professionalId: string; name: string; sessions: number }>
 }
 
-export interface FinancialReportParams {
+export interface ReportParams {
+  /** ISO date, yyyy-MM-dd. */
   from: string
   to: string
 }
 
-export interface ClinicalReportParams {
-  from: string
-  to: string
-  professionalId?: string
-}
+export type ReportExport = 'appointments' | 'invoices'

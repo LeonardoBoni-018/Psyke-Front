@@ -1,189 +1,188 @@
 import { useMemo, useState } from 'react'
-import { Plus, DollarSign, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { PageHeader } from '@/components/layout/PageHeader/PageHeader'
 import { BalanceSummary } from '@/features/financial/components/BalanceSummary/BalanceSummary'
 import { ChargeTable } from '@/features/financial/components/ChargeTable/ChargeTable'
-import { ChargeToolbar } from '@/features/financial/components/ChargeToolbar/ChargeToolbar'
+import { ChargeToolbar, type ChargeFilter } from '@/features/financial/components/ChargeToolbar/ChargeToolbar'
 import { CreateChargeModal } from '@/features/financial/components/CreateChargeModal/CreateChargeModal'
-import { useCreateCharge, useExportCharge, useFinancialSummary, useMarkChargePaid, useCharges } from '@/features/financial/hooks/useFinancial'
+import {
+  useCancelInvoice,
+  useCreateInvoice,
+  useExportInvoice,
+  useFinancialSummary,
+  useInvoices,
+  useMarkInvoicePaid,
+} from '@/features/financial/hooks/useFinancial'
 import { usePatients } from '@/features/patients/hooks/usePatients'
-import { usePagination } from '@/hooks/usePagination'
+import { useProfessionals } from '@/features/professionals/hooks/useProfessionals'
 
 const PAGE_SIZE = 10
 
 export default function FinancialPage() {
-  const [status, setStatus] = useState<'all' | 'open' | 'paid' | 'overdue'>('all')
+  const [status, setStatus] = useState<ChargeFilter>('ALL')
   const [search, setSearch] = useState('')
   const [pageIndex, setPageIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [busyChargeId, setBusyChargeId] = useState<string | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  // Linked from a patient's page: show only that patient's charges.
+  const patientFilter = searchParams.get('patientId') ?? undefined
 
-  const patientsQuery = usePatients()
+  const patientsQuery = usePatients({ size: 100 })
+  const professionalsQuery = useProfessionals({ size: 100 })
   const summaryQuery = useFinancialSummary()
-  const chargesQuery = useCharges({
-    status: status === 'all' ? undefined : status,
-    search: search.trim() || undefined,
+  const invoicesQuery = useInvoices({
+    status: status === 'ALL' ? undefined : status,
+    patientId: patientFilter,
     page: pageIndex,
     size: PAGE_SIZE,
   })
-  const createChargeMutation = useCreateCharge()
-  const markPaidMutation = useMarkChargePaid()
-  const exportMutation = useExportCharge()
+  const createMutation = useCreateInvoice()
+  const markPaid = useMarkInvoicePaid()
+  const cancel = useCancelInvoice()
+  const exportPdf = useExportInvoice()
 
-  const charges = chargesQuery.data?.content ?? []
-  const totalCount = chargesQuery.data?.totalElements ?? 0
+  const totalPages = invoicesQuery.data?.totalPages ?? 1
+  const totalCount = invoicesQuery.data?.totalElements ?? 0
 
-  const pagination = usePagination({
-    total: totalCount,
-    page: pageIndex + 1,
-    pageSize: PAGE_SIZE,
-  })
+  // The API has no text search for invoices, so filter the loaded page by patient name or note.
+  const charges = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const rows = invoicesQuery.data?.content ?? []
+    if (!q) return rows
+    return rows.filter((c) => `${c.patientName ?? ''} ${c.notes ?? ''}`.toLowerCase().includes(q))
+  }, [invoicesQuery.data, search])
 
   const patientOptions = useMemo(
-    () =>
-      patientsQuery.data?.content.map((patient) => ({
-        id: patient.id,
-        name: patient.fullName,
-      })) ?? [],
+    () => patientsQuery.data?.content.map((p) => ({ id: p.id, name: p.fullName })) ?? [],
     [patientsQuery.data],
   )
+  const professionalOptions = useMemo(
+    () => professionalsQuery.data?.content.map((p) => ({ id: p.id, name: p.fullName })) ?? [],
+    [professionalsQuery.data],
+  )
+  const sessionValue = (id: string) => professionalsQuery.data?.content.find((p) => p.id === id)?.sessionValue
 
-  const handleCreateCharge = (payload: { patientId: string; description: string; amount: number; dueDate: string }) => {
-    createChargeMutation.mutate(payload)
+  const withBusy = (id: string, run: (done: () => void) => void) => {
+    setBusyId(id)
+    run(() => setBusyId(null))
   }
 
-  const handleMarkPaid = (id: string) => {
-    setBusyChargeId(id)
-    markPaidMutation.mutate(id, {
-      onSettled: () => setBusyChargeId(null),
-    })
-  }
-
-  const handleExport = (id: string) => {
-    setBusyChargeId(id)
-    exportMutation.mutate(id, {
-      onSuccess: (blob) => {
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `cobranca-${id}.pdf`
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        URL.revokeObjectURL(url)
-      },
-      onSettled: () => setBusyChargeId(null),
-    })
-  }
-
-  const loading = summaryQuery.isLoading || chargesQuery.isLoading
+  const handleExport = (id: string) =>
+    withBusy(id, (done) =>
+      exportPdf.mutate(id, {
+        onSuccess: (blob) => {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `cobranca-${id}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+          URL.revokeObjectURL(url)
+        },
+        onSettled: done,
+      }),
+    )
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
-            <DollarSign size={20} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-serif text-text-1">Financeiro</h1>
-            <p className="mt-1 text-sm text-text-3">Monitore receitas, faturas em aberto e guias de pagamento.</p>
-          </div>
-        </div>
-        <Button size="md" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)}>
-          Nova cobrança
-        </Button>
-      </div>
+      <PageHeader
+        title="Financeiro"
+        description="Acompanhe o que foi recebido e o que ainda está em aberto."
+        actions={
+          <Button size="md" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)} disabled={patientOptions.length === 0 || professionalOptions.length === 0}>
+            Nova cobrança
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-        {summaryQuery.data ? <BalanceSummary summary={summaryQuery.data} /> : (
-          summaryQuery.isLoading ? (
-            <div className="page-enter rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
-              <div className="flex gap-8">
-                <div className="space-y-2">
-                  <div className="animate-shimmer h-3 w-16 rounded" />
-                  <div className="animate-shimmer h-7 w-28 rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="animate-shimmer h-3 w-16 rounded" />
-                  <div className="animate-shimmer h-7 w-28 rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="animate-shimmer h-3 w-16 rounded" />
-                  <div className="animate-shimmer h-7 w-28 rounded" />
-                </div>
-              </div>
-            </div>
+      {summaryQuery.data ? (
+        <BalanceSummary summary={summaryQuery.data} />
+      ) : (
+        <div className="surface grid grid-cols-1 sm:grid-cols-3">
+          {summaryQuery.isError ? (
+            <p className="px-6 py-8 text-[14px] text-text-3 sm:col-span-3">Não foi possível carregar o resumo financeiro.</p>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
-              <AlertCircle size={22} className="text-text-3 opacity-50" />
-              <p className="text-sm text-text-3">Resumo financeiro indisponível</p>
-            </div>
-          )
+            [0, 1, 2].map((i) => (
+              <div key={i} className="space-y-3 px-6 py-5">
+                <div className="animate-shimmer h-3 w-24 rounded" />
+                <div className="animate-shimmer h-8 w-32 rounded" />
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {patientFilter && (
+        <div className="flex items-center gap-2 rounded-lg bg-brand/10 px-3.5 py-2.5 text-[13px] text-brand">
+          <span className="flex-1">Mostrando as cobranças de um paciente específico.</span>
+          <button
+            type="button"
+            onClick={() => { setSearchParams({}); setPageIndex(0) }}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold transition hover:bg-brand/10"
+          >
+            Ver todas <X size={13} />
+          </button>
+        </div>
+      )}
+
+      <ChargeToolbar
+        status={status}
+        search={search}
+        onStatusChange={(value) => {
+          setStatus(value)
+          setPageIndex(0)
+        }}
+        onSearchChange={setSearch}
+      />
+
+      <section className="surface overflow-hidden" aria-label="Cobranças">
+        {invoicesQuery.isLoading ? (
+          <div className="space-y-3 p-5">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="animate-shimmer h-11 rounded-lg" style={{ opacity: 1 - i * 0.18 }} />
+            ))}
+          </div>
+        ) : invoicesQuery.isError ? (
+          <p className="px-6 py-14 text-center text-[14px] text-text-3">Não foi possível carregar as cobranças.</p>
+        ) : (
+          <ChargeTable
+            charges={charges}
+            busyId={busyId ?? undefined}
+            onMarkPaid={(id) => withBusy(id, (done) => markPaid.mutate(id, { onSettled: done }))}
+            onCancel={(id) => withBusy(id, (done) => cancel.mutate(id, { onSettled: done }))}
+            onExport={handleExport}
+          />
         )}
 
-        <ChargeToolbar
-          status={status}
-          search={search}
-          onStatusChange={(value) => {
-            setStatus(value)
-            setPageIndex(0)
-          }}
-          onSearchChange={(value) => {
-            setSearch(value)
-            setPageIndex(0)
-          }}
-        />
-
-        <div className="rounded-[var(--radius-xl)] border border-border bg-bg-1 p-4 shadow-sm sm:p-6">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-            <div>
-              <h2 className="text-lg font-serif text-text-1">Cobranças</h2>
-              <p className="text-sm text-text-3">Visualize e gerencie todas as faturas da clínica.</p>
-            </div>
-            <div className="text-sm text-text-3">Total de cobranças: {totalCount}</div>
-          </div>
-
-          {loading ? (
-            <div className="page-enter space-y-3 p-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4" style={{ opacity: 1 - i * 0.15 }}>
-                  <div className="animate-shimmer h-4 w-32 rounded" />
-                  <div className="animate-shimmer h-4 w-20 rounded" />
-                  <div className="animate-shimmer h-4 w-16 rounded ml-auto" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ChargeTable
-              charges={charges}
-              onMarkPaid={handleMarkPaid}
-              onExport={handleExport}
-              busyId={busyChargeId ?? undefined}
-            />
-          )}
-
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-text-3 font-mono">Página {pageIndex + 1} de {pagination.totalPages}</p>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" disabled={!pagination.hasPrevious} onClick={() => setPageIndex((current) => Math.max(current - 1, 0))}>
-                <ChevronLeft size={14} /> Anterior
-              </Button>
-              <Button variant="ghost" size="sm" disabled={!pagination.hasNext} onClick={() => setPageIndex((current) => current + 1)}>
-                Próxima <ChevronRight size={14} />
-              </Button>
-            </div>
+        <div className="flex flex-col gap-3 border-t border-border px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-text-3 tabular">
+            {totalCount} {totalCount === 1 ? 'cobrança' : 'cobranças'} · página {pageIndex + 1} de {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" disabled={pageIndex === 0} onClick={() => setPageIndex((p) => Math.max(p - 1, 0))}>
+              <ChevronLeft size={14} /> Anterior
+            </Button>
+            <Button variant="ghost" size="sm" disabled={pageIndex + 1 >= totalPages} onClick={() => setPageIndex((p) => p + 1)}>
+              Próxima <ChevronRight size={14} />
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {isModalOpen ? (
+      {isModalOpen && (
         <CreateChargeModal
           patients={patientOptions}
-          onCreate={handleCreateCharge}
+          professionals={professionalOptions}
+          suggestedAmount={sessionValue}
+          submitting={createMutation.isPending}
+          onCreate={(payload) => createMutation.mutate(payload, { onSuccess: () => setIsModalOpen(false) })}
           onClose={() => setIsModalOpen(false)}
         />
-      ) : null}
+      )}
     </div>
   )
 }

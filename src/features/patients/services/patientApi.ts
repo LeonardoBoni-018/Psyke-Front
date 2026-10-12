@@ -1,5 +1,6 @@
 import { api } from '@/lib/axios'
 import type { PaginatedResponse } from '@/types/api'
+import type { AppointmentResponse } from '@/types/appointment'
 import type { PatientResponse, CreatePatientRequest, UpdatePatientRequest } from '@/types/patient'
 
 interface PatientListParams {
@@ -20,6 +21,12 @@ export async function getPatientById(id: string): Promise<PatientResponse> {
   return response.data
 }
 
+/** All appointments of a patient (the API returns a plain list, newest and oldest alike). */
+export async function listPatientAppointments(patientId: string): Promise<AppointmentResponse[]> {
+  const response = await api.get<AppointmentResponse[]>('/appointments', { params: { patientId } })
+  return response.data
+}
+
 export async function createPatient(data: CreatePatientRequest): Promise<PatientResponse> {
   const response = await api.post<PatientResponse>('/patients', data)
   return response.data
@@ -32,11 +39,4 @@ export async function updatePatient(id: string, data: UpdatePatientRequest): Pro
 
 export async function deactivatePatient(id: string): Promise<void> {
   await api.delete(`/patients/${id}`)
-}
-
-export async function exportPatientData(id: string): Promise<Blob> {
-  const response = await api.get<Blob>(`/patients/${id}/export`, {
-    responseType: 'blob',
-  })
-  return response.data
 }

@@ -1,130 +1,109 @@
-import { useMemo } from 'react'
+import { Check, FileDown, Loader2, Receipt, XCircle } from 'lucide-react'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { formatCurrency } from '@/lib/currency'
 import { formatDate } from '@/lib/date'
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Loader2 } from 'lucide-react'
-import type { Charge } from '@/types/financial'
+import type { Invoice } from '@/types/financial'
 
 interface ChargeTableProps {
-  charges: Charge[]
+  charges: Invoice[]
   onMarkPaid: (id: string) => void
+  onCancel: (id: string) => void
   onExport: (id: string) => void
   busyId?: string
 }
 
-const columnHelper = createColumnHelper<Charge>()
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value)
-}
-
-export function ChargeTable({ charges, onMarkPaid, onExport, busyId }: ChargeTableProps) {
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor('description', {
-        header: 'Descrição',
-        cell: (info) => <div className="font-medium text-text-1">{info.getValue()}</div>,
-      }),
-      columnHelper.accessor('amount', {
-        header: 'Valor',
-        cell: (info) => <span>{formatCurrency(info.getValue())}</span>,
-      }),
-      columnHelper.accessor('dueDate', {
-        header: 'Vencimento',
-        cell: (info) => <span>{formatDate(info.getValue())}</span>,
-      }),
-      columnHelper.accessor('paid', {
-        header: 'Status',
-        cell: (info) => (
-          <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-mono ${
-            info.getValue() ? 'bg-teal-10 text-teal' : 'bg-amber bg-opacity-10 text-amber'
-          }`}>
-            {info.getValue() ? 'Pago' : 'Aberto'}
-          </span>
-        ),
-      }),
-      columnHelper.accessor((row) => row.id, {
-        id: 'actions',
-        header: 'Ações',
-        cell: (info) => {
-          const id = info.getValue()
-          return (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-lg border border-border bg-bg-2 px-3 py-1 text-[12px] text-text-2 transition hover:border-border-hi hover:text-text-1"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onExport(id)
-                }}
-              >
-                Exportar
-              </button>
-              {!info.row.original.paid ? (
-                <button
-                  type="button"
-                  className="rounded-lg bg-teal px-3 py-1 text-[12px] text-bg-0 transition hover:bg-teal-dim"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onMarkPaid(id)
-                  }}
-                >
-                  {busyId === id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Pagar'}
-                </button>
-              ) : null}
-            </div>
-          )
-        },
-      }),
-    ],
-    [onExport, onMarkPaid, busyId],
-  )
-
-  const table = useReactTable({
-    data: charges,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
+export function ChargeTable({ charges, onMarkPaid, onCancel, onExport, busyId }: ChargeTableProps) {
+  if (charges.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-bg-2 text-text-3">
+          <Receipt size={22} />
+        </span>
+        <p className="text-[15px] text-text-1">Nenhuma cobrança encontrada</p>
+        <p className="max-w-xs text-[13px] text-text-3">Ajuste o filtro ou crie uma nova cobrança para um paciente.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="table-scroll rounded-[var(--radius-xl)] border border-border bg-bg-1">
-      <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-        <thead className="bg-bg-1">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="border-b border-border px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-text-3"
-                >
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
+    <div className="table-scroll">
+      <table className="w-full text-left text-[14px]">
+        <thead>
+          <tr className="border-b border-border text-[13px] text-text-3">
+            <th className="px-5 py-3 font-medium">Paciente</th>
+            <th className="px-3 py-3 font-medium">Observação</th>
+            <th className="px-3 py-3 font-medium">Emitida em</th>
+            <th className="px-3 py-3 text-right font-medium">Valor</th>
+            <th className="px-3 py-3 font-medium">Situação</th>
+            <th className="px-5 py-3 text-right font-medium">
+              <span className="sr-only">Ações</span>
+            </th>
+          </tr>
         </thead>
         <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className="border-b border-border transition hover:bg-teal-10 hover:cursor-pointer"
-            >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-4 py-4 align-top text-text-2">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {charges.map((charge, i) => {
+            const busy = busyId === charge.id
+            return (
+              <tr
+                key={charge.id}
+                className="item-enter border-b border-border/70 last:border-0 hover:bg-bg-2/60"
+                style={{ animationDelay: `${i * 30}ms` }}
+              >
+                <td className="px-5 py-3.5">
+                  <span className="font-medium text-text-1">{charge.patientName ?? 'Paciente'}</span>
+                  {charge.professionalName && <span className="block text-xs text-text-3">{charge.professionalName}</span>}
                 </td>
-              ))}
-            </tr>
-          ))}
-          {charges.length === 0 ? (
-            <tr>
-              <td className="px-4 py-6 text-center text-text-3" colSpan={5}>
-                Nenhuma cobrança encontrada.
-              </td>
-            </tr>
-          ) : null}
+                <td className="max-w-[240px] truncate px-3 py-3.5 text-text-2">{charge.notes || 'Sessão'}</td>
+                <td className="px-3 py-3.5 text-text-2 tabular">
+                  {formatDate(charge.createdAt)}
+                  {charge.status === 'PAID' && charge.paymentDate && (
+                    <span className="block text-xs text-text-3">paga em {formatDate(charge.paymentDate)}</span>
+                  )}
+                </td>
+                <td className="px-3 py-3.5 text-right font-semibold text-text-1 tabular">{formatCurrency(charge.amount)}</td>
+                <td className="px-3 py-3.5">
+                  <StatusBadge status={charge.status} label={charge.status === 'CANCELLED' ? 'Cancelada' : undefined} />
+                </td>
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {busy && <Loader2 size={15} className="animate-spin text-text-3" aria-label="Processando" />}
+                    {charge.status === 'PENDING' && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onMarkPaid(charge.id)}
+                          className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-bg-1 px-2.5 text-[13px] font-semibold text-text-1 shadow-sm transition hover:border-brand hover:text-brand disabled:opacity-50"
+                        >
+                          <Check size={14} /> Marcar paga
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onCancel(charge.id)}
+                          aria-label="Cancelar cobrança"
+                          title="Cancelar cobrança"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-3 transition hover:bg-danger/10 hover:text-danger disabled:opacity-50"
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => onExport(charge.id)}
+                      aria-label="Baixar PDF da cobrança"
+                      title="Baixar PDF"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-3 transition hover:bg-bg-2 hover:text-text-1 disabled:opacity-50"
+                    >
+                      <FileDown size={16} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

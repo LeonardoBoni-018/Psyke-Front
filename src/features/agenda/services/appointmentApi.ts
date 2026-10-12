@@ -57,5 +57,5 @@ export async function createSession(data: CreateSessionRequest): Promise<void> {
 }
 
 export async function addRecurrence(data: RecurrenceRequest): Promise<void> {
-  await api.post('/appointments/recurrence', data)
+  await api.post('/appointments/recurring', data)
 }

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { createAppointment } from '@/features/agenda/services/appointmentApi'
 import { APPOINTMENTS_KEY, CALENDAR_KEY } from '@/features/agenda/hooks/useAppointments'
 import type { AppointmentRequest, AppointmentResponse } from '@/types/appointment'
@@ -10,6 +11,8 @@ export function useCreateAppointment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY })
       queryClient.invalidateQueries({ queryKey: CALENDAR_KEY })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      toast.success('Sessão agendada')
     },
   })
 }

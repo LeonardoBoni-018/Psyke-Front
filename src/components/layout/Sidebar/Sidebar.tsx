@@ -1,17 +1,19 @@
-import { memo, useMemo } from 'react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Clock,
+  CalendarDays,
   Users,
-  DollarSign,
-  BarChart2,
-  UserCheck,
+  Wallet,
+  BarChart3,
+  Stethoscope,
   Settings,
   LogOut,
+  ChevronsUpDown,
   X,
 } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { Logo } from '@/components/brand/Logo'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useLogout } from '@/features/auth/hooks/useAuth'
 
@@ -21,28 +23,30 @@ interface NavItem {
   path: string
 }
 
-const navItems: { section: string; items: NavItem[] }[] = [
+const navGroups: { title: string; items: NavItem[] }[] = [
   {
-    section: 'Principal',
+    title: 'Clínica',
     items: [
-      { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-      { label: 'Agenda', icon: Clock, path: '/agenda' },
+      { label: 'Painel', icon: LayoutDashboard, path: '/dashboard' },
+      { label: 'Agenda', icon: CalendarDays, path: '/agenda' },
       { label: 'Pacientes', icon: Users, path: '/patients' },
     ],
   },
   {
-    section: 'Gestão',
+    title: 'Gestão',
     items: [
-      { label: 'Financeiro', icon: DollarSign, path: '/financial' },
-      { label: 'Relatórios', icon: BarChart2, path: '/reports' },
-      { label: 'Profissionais', icon: UserCheck, path: '/professionals' },
+      { label: 'Financeiro', icon: Wallet, path: '/financial' },
+      { label: 'Relatórios', icon: BarChart3, path: '/reports' },
+      { label: 'Profissionais', icon: Stethoscope, path: '/professionals' },
       { label: 'Configurações', icon: Settings, path: '/settings' },
     ],
   },
 ]
 
-function getInitials(nomeCompleto: string): string {
-  return nomeCompleto
+const allPaths = navGroups.flatMap((g) => g.items.map((i) => i.path))
+
+function getInitials(name: string): string {
+  return name
     .split(' ')
     .filter(Boolean)
     .map((part) => part[0]?.toUpperCase())
@@ -50,87 +54,68 @@ function getInitials(nomeCompleto: string): string {
     .join('')
 }
 
-function SidebarFooter() {
+/** Finds which nav entry owns the current URL (e.g. /patients/123/record -> /patients). */
+function activePathFor(pathname: string) {
+  return allPaths.find((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
+function UserMenu() {
   const user = useAuthStore((s) => s.user)
   const { mutate: logout } = useLogout()
   const navigate = useNavigate()
-
-  const initials = useMemo(
-    () => getInitials(user?.fullName ?? 'Usuário'),
-    [user],
-  )
-  const roleLabel = user?.roles?.[0]?.replace('ROLE_', '') ?? 'Usuário'
+  const initials = useMemo(() => getInitials(user?.fullName ?? 'Usuário'), [user])
+  const roleLabels: Record<string, string> = {
+    ROLE_ADMIN: 'Administração',
+    ROLE_PROFESSIONAL: 'Profissional',
+    ROLE_RECEPTIONIST: 'Recepção',
+  }
+  const roleLabel = roleLabels[user?.roles?.[0] ?? ''] ?? 'Equipe'
 
   return (
-    <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)' }}>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <button
-            type="button"
-            aria-label="Menu da conta"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-              padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
-              border: 'none', background: 'transparent', color: 'inherit',
-              fontFamily: 'inherit', fontSize: 'inherit',
-              transition: 'background 150ms', textAlign: 'left',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          aria-label="Menu da conta"
+          className="group flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-bg-1 hover:shadow-sm data-[state=open]:bg-bg-1 data-[state=open]:shadow-sm"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-[13px] font-bold text-brand">
+            {initials}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-semibold text-text-1">{user?.fullName ?? 'Usuário'}</span>
+            <span className="block truncate text-xs text-text-3">{roleLabel}</span>
+          </span>
+          <ChevronsUpDown size={15} className="shrink-0 text-text-3 transition group-hover:text-text-2" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          side="top"
+          align="start"
+          sideOffset={8}
+          className="animate-pop-in z-[100] min-w-[210px] rounded-lg border border-border bg-bg-1 p-1.5 shadow-lg"
+        >
+          <div className="px-2.5 pb-2 pt-1.5">
+            <p className="truncate text-[13px] font-semibold text-text-1">{user?.fullName}</p>
+            <p className="truncate text-xs text-text-3">{user?.email}</p>
+          </div>
+          <DropdownMenu.Separator className="my-1 h-px bg-border" />
+          <DropdownMenu.Item
+            onSelect={() => navigate('/settings')}
+            className="flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-text-1 outline-none data-[highlighted]:bg-bg-2"
           >
-            <div style={{
-              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-              background: 'var(--teal)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: 12, color: 'var(--bg-0)',
-            }}>
-              {initials}
-            </div>
-            <div style={{ overflow: 'hidden', flex: 1 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-1)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user?.fullName ?? 'Usuário'}
-              </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-3)' }}>
-                {roleLabel}
-              </div>
-            </div>
-          </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            side="top"
-            align="start"
-            sideOffset={8}
-            style={{
-              background: 'var(--bg-2)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)', padding: '4px', minWidth: 180,
-              boxShadow: 'var(--shadow-md)', zIndex: 100,
-            }}
+            <Settings size={15} className="text-text-3" /> Configurações
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => logout()}
+            className="flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-danger outline-none data-[highlighted]:bg-danger/10"
           >
-            {[
-              { icon: <Settings size={13} />, label: 'Configurações', action: () => navigate('/settings') },
-              { icon: <LogOut size={13} />, label: 'Sair', action: () => logout(), danger: true },
-            ].map(({ icon, label, action, danger }) => (
-              <DropdownMenu.Item
-                key={label}
-                onClick={action}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-                  fontSize: 13, color: danger ? 'var(--danger)' : 'var(--text-1)',
-                  outline: 'none', transition: 'background 100ms',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = danger ? 'var(--danger-10)' : 'var(--bg-3)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                {icon} {label}
-              </DropdownMenu.Item>
-            ))}
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-    </div>
+            <LogOut size={15} /> Sair
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   )
 }
 
@@ -141,68 +126,102 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
+  const { pathname } = useLocation()
+  const navRef = useRef<HTMLElement>(null)
+  const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null)
+  const activePath = activePathFor(pathname)
+
+  // The active "pill" slides between items instead of jumping. It is re-measured when web fonts finish
+  // loading and whenever the nav is resized, because both change the items' positions.
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const measure = () => {
+      const el = nav.querySelector<HTMLElement>('[data-active="true"]')
+      setIndicator(el ? { top: el.offsetTop, height: el.offsetHeight } : null)
+    }
+    measure()
+    void document.fonts?.ready.then(measure)
+    const ro = new ResizeObserver(measure)
+    ro.observe(nav)
+    nav.querySelectorAll('a').forEach((a) => ro.observe(a))
+    return () => ro.disconnect()
+  }, [activePath, open])
+
   return (
     <>
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-[var(--scrim)] backdrop-blur-[2px] transition-opacity duration-200 lg:hidden ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
       <aside
         id="app-sidebar"
         aria-label="Navegação principal"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-border bg-bg-1 text-text-2 transition-transform duration-200 ease-out lg:static lg:z-auto lg:w-[220px] lg:min-w-[220px] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[272px] flex-col bg-bg-0 px-3 pb-3 pt-4 shadow-lg transition-transform duration-300 ease-out lg:static lg:z-auto lg:w-[248px] lg:min-w-[248px] lg:translate-x-0 lg:shadow-none ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-border px-4 pb-4 pt-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal font-serif text-xl italic text-bg-0">ψ</div>
-            <div>
-              <div className="font-serif text-lg text-text-1">Psyke</div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-3">Clinic OS v2</div>
-            </div>
+        <div className="flex items-center justify-between px-2 pb-5">
+          <div className="flex items-center gap-2.5">
+            <Logo size={34} />
+            <span className="font-display text-[21px] font-semibold tracking-tight text-text-1">Psyke</span>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar menu"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-3 transition hover:bg-bg-2 hover:text-text-1 lg:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-3 transition hover:bg-bg-1 hover:text-text-1 lg:hidden"
           >
             <X size={18} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4">
-          {navItems.map((section) => (
-            <div key={section.section} className="mb-3">
-              <div className="px-4 pb-1.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-text-3">{section.section}</span>
+        <nav ref={navRef} className="relative flex-1 space-y-5 overflow-y-auto">
+          {indicator && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 right-0 rounded-lg border border-border bg-bg-1 shadow-sm transition-[transform,height] duration-300 ease-[var(--ease-out)]"
+              style={{ top: 0, height: indicator.height, transform: `translateY(${indicator.top}px)` }}
+            />
+          )}
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <p className="px-3 pb-1.5 text-xs font-medium text-text-3">{group.title}</p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = activePath === item.path
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      viewTransition
+                      onClick={onClose}
+                      data-active={active}
+                      className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors duration-150 lg:py-2 ${
+                        active ? 'text-text-1' : 'text-text-2 hover:text-text-1'
+                      }`}
+                    >
+                      <item.icon
+                        size={18}
+                        strokeWidth={active ? 2.2 : 1.9}
+                        aria-hidden="true"
+                        className={`transition-colors ${active ? 'text-brand' : ''}`}
+                      />
+                      {item.label}
+                    </NavLink>
+                  )
+                })}
               </div>
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 border-l-2 px-4 py-2.5 text-[13px] font-medium transition-colors duration-150 lg:py-2 ${
-                      isActive
-                        ? 'border-teal bg-teal/10 text-teal'
-                        : 'border-transparent text-text-2 hover:bg-bg-2 hover:text-text-1'
-                    }`
-                  }
-                >
-                  <item.icon size={16} aria-hidden="true" />
-                  {item.label}
-                </NavLink>
-              ))}
             </div>
           ))}
         </nav>
 
-        <SidebarFooter />
+        <div className="border-t border-border pt-3">
+          <UserMenu />
+        </div>
       </aside>
     </>
   )

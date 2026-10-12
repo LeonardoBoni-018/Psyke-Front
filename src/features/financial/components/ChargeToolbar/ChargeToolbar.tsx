@@ -1,49 +1,50 @@
-import { useMemo } from 'react'
+import { Search } from 'lucide-react'
+import type { InvoiceStatus } from '@/types/financial'
+
+export type ChargeFilter = 'ALL' | InvoiceStatus
 
 interface ChargeToolbarProps {
-  status: 'all' | 'open' | 'paid' | 'overdue'
+  status: ChargeFilter
   search: string
-  onStatusChange: (status: 'all' | 'open' | 'paid' | 'overdue') => void
+  onStatusChange: (status: ChargeFilter) => void
   onSearchChange: (value: string) => void
 }
 
-const options = [
-  { value: 'all', label: 'Todas' },
-  { value: 'open', label: 'Abertas' },
-  { value: 'paid', label: 'Pagas' },
-  { value: 'overdue', label: 'Vencidas' },
-] as const
+const options: { value: ChargeFilter; label: string }[] = [
+  { value: 'ALL', label: 'Todas' },
+  { value: 'PENDING', label: 'Pendentes' },
+  { value: 'PAID', label: 'Pagas' },
+  { value: 'CANCELLED', label: 'Canceladas' },
+]
 
 export function ChargeToolbar({ status, search, onStatusChange, onSearchChange }: ChargeToolbarProps) {
-  const statusButtons = useMemo(
-    () =>
-      options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={`rounded-full border px-3 py-1 text-sm transition ${
-            status === option.value
-              ? 'border-teal bg-teal text-bg-0'
-              : 'border-border bg-bg-2 text-text-2 hover:border-border-hi hover:text-text-1'
-          }`}
-          onClick={() => onStatusChange(option.value)}
-        >
-          {option.label}
-        </button>
-      )),
-    [status],
-  )
-
   return (
-    <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-2 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap gap-2">{statusButtons}</div>
-      <label className="relative block w-full max-w-sm">
-        <span className="sr-only">Buscar cobranças</span>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div role="tablist" aria-label="Filtrar por situação" className="inline-flex w-full gap-1 overflow-x-auto rounded-lg bg-bg-2 p-1 sm:w-auto">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={status === option.value}
+            onClick={() => onStatusChange(option.value)}
+            className={`h-8 shrink-0 rounded-md px-3.5 text-[13px] font-medium transition ${
+              status === option.value ? 'bg-bg-1 text-text-1 shadow-sm' : 'text-text-2 hover:text-text-1'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <label className="relative block w-full sm:max-w-xs">
+        <span className="sr-only">Buscar cobranças nesta página</span>
+        <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Buscar paciente, descrição..."
-          className="w-full rounded-full border border-border bg-bg-1 px-4 py-3 text-sm text-text-1 placeholder:text-text-3 focus:border-teal focus:outline-none focus:ring-2 focus:ring-teal/20"
+          placeholder="Buscar por paciente ou observação"
+          className="h-10 w-full rounded-lg border border-border bg-bg-1 pl-9 pr-3 text-[14px] text-text-1 shadow-sm outline-none transition placeholder:text-text-3 focus:border-brand focus:shadow-focus"
         />
       </label>
     </div>

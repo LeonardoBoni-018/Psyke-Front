@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Eye, EyeOff, Loader2, Building2, Mail, Lock, AlertCircle } from 'lucide-react'
 import { useLogin } from '../hooks/useAuth'
 import { getApiErrorMessage } from '@/lib/errors'
+import { Logo } from '@/components/brand/Logo'
 
 const schema = z.object({
   tenantId: z.string().trim().min(1, 'ID da clínica obrigatório'),
@@ -46,16 +47,16 @@ interface FieldProps {
 function Field({ id, label, icon, error, trailing, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="font-mono text-[11px] tracking-[0.06em] text-text-3">
+      <label htmlFor={id} className="font-mono text-[11px] text-text-3">
         {label}
       </label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-text-3">{icon}</span>
+        <span className="pointer-events-none absolute left-3.5 top-1/2 flex -translate-y-1/2 text-text-3">{icon}</span>
         {children}
         {trailing && <span className="absolute right-1 top-1/2 flex -translate-y-1/2">{trailing}</span>}
       </div>
       {error && (
-        <span id={`${id}-error`} role="alert" className="font-mono text-[11px] text-danger">
+        <span id={`${id}-error`} role="alert" className="text-xs text-danger">
           {error}
         </span>
       )}
@@ -64,7 +65,7 @@ function Field({ id, label, icon, error, trailing, children }: FieldProps) {
 }
 
 const inputClass =
-  'w-full rounded-md border border-border bg-bg-2 py-2.5 pl-9 pr-3 text-[14px] text-text-1 outline-none transition placeholder:text-text-3 focus:border-teal focus:shadow-focus aria-[invalid=true]:border-danger'
+  'h-11 w-full rounded-lg border border-border bg-bg-1 pl-10 pr-3 text-[15px] text-text-1 shadow-sm outline-none transition placeholder:text-text-3 focus:border-brand focus:shadow-focus aria-[invalid=true]:border-danger'
 
 export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
@@ -84,33 +85,58 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="page-enter grid min-h-dvh bg-bg-0 lg:grid-cols-[42%_1fr]">
-      <section className="flex flex-col justify-center gap-5 border-b border-border bg-bg-1 px-6 py-8 sm:px-10 lg:gap-8 lg:border-b-0 lg:border-r lg:px-16 lg:py-16">
-        <div className="flex items-center gap-4 lg:block">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal lg:mb-6 lg:h-[52px] lg:w-[52px]">
-            <span className="font-serif text-2xl italic text-bg-0 lg:text-[28px]">ψ</span>
-          </div>
-          <div>
-            <h1 className="font-serif text-3xl leading-none text-text-1 lg:mb-3 lg:text-5xl">Psyke</h1>
-            <p className="mt-1 font-mono text-[11px] tracking-[0.12em] text-text-3 lg:mt-0 lg:text-xs">Clinic OS — v2.0</p>
+    <div className="grid min-h-dvh bg-bg-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <section className="relative flex flex-col justify-between gap-10 px-6 py-8 sm:px-10 lg:px-14 lg:py-12">
+        <div className="flex items-center gap-3">
+          <Logo size={40} />
+          <h1 className="font-display text-[26px] font-semibold leading-none tracking-tight text-text-1">Psyke</h1>
+        </div>
+
+        <div className="hidden max-w-[520px] lg:block">
+          <p className="rise-in font-display text-[44px] font-semibold leading-[1.08] tracking-tight text-text-1" style={{ animationDelay: '60ms' }}>
+            A rotina da clínica,<br />sem ruído.
+          </p>
+          <p className="rise-in mt-4 max-w-[420px] text-[16px] leading-relaxed text-text-2" style={{ animationDelay: '140ms' }}>
+            Agenda, prontuário e financeiro no mesmo lugar, com o cuidado que dados de saúde pedem.
+          </p>
+
+          <div
+            className="rise-in surface mt-10 max-w-[460px] p-4"
+            style={{ animationDelay: '260ms', boxShadow: 'var(--shadow-md)' }}
+            aria-hidden="true"
+          >
+            <div className="mb-3 flex items-center justify-between px-1">
+              <span className="text-[13px] font-semibold text-text-1">Hoje</span>
+              <span className="flex items-center gap-1.5 text-xs text-text-3">
+                <span className="animate-pulse-live h-2 w-2 rounded-full bg-brand" /> 3 sessões
+              </span>
+            </div>
+            {[
+              { time: '09:00', name: 'Mariana Costa', tag: 'Confirmada', tone: 'bg-brand/10 text-brand' },
+              { time: '10:30', name: 'Lucas Andrade', tag: 'Aguardando', tone: 'bg-amber/10 text-amber' },
+              { time: '14:00', name: 'Beatriz Nogueira', tag: 'Confirmada', tone: 'bg-brand/10 text-brand' },
+            ].map((row, i) => (
+              <div
+                key={row.time}
+                className="item-enter flex items-center gap-3 rounded-lg px-2 py-2.5"
+                style={{ animationDelay: `${420 + i * 90}ms` }}
+              >
+                <span className="w-11 text-[13px] font-semibold tabular text-text-2">{row.time}</span>
+                <span className="h-7 w-0.5 rounded-full bg-brand/40" />
+                <span className="flex-1 text-[14px] text-text-1">{row.name}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${row.tone}`}>{row.tag}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <p className="hidden max-w-xs text-sm leading-relaxed text-text-2 lg:block">
-          Sistema de gestão clínica para psicólogos e clínicas de psicologia. Prontuários, agenda, financeiro e muito mais.
-        </p>
-        <div className="hidden gap-2 lg:flex">
-          {['Prontuário', 'Agenda', 'LGPD'].map((tag) => (
-            <span key={tag} className="rounded-full border border-teal/20 bg-teal/10 px-2.5 py-1 font-mono text-[10px] text-teal">
-              {tag}
-            </span>
-          ))}
-        </div>
+
+        <p className="hidden text-[13px] text-text-3 lg:block">Dados criptografados em trânsito e isolados por clínica.</p>
       </section>
 
-      <section className="flex items-center justify-center px-4 py-8 sm:p-10">
-        <div className="w-full max-w-[420px] rounded-xl border border-border bg-bg-1 p-6 sm:p-10">
-          <h2 className="mb-2 font-serif text-[26px] text-text-1">Entrar</h2>
-          <p className="mb-8 text-[13px] text-text-3">Acesse sua clínica com suas credenciais</p>
+      <section className="flex items-center justify-center px-4 pb-10 sm:p-10 lg:border-l lg:border-border lg:bg-bg-1">
+        <div className="rise-in w-full max-w-[380px]">
+          <h2 className="mb-1.5 font-display text-[30px] font-semibold tracking-tight text-text-1">Entrar</h2>
+          <p className="mb-8 text-[14px] text-text-2">Use o ID da sua clínica e suas credenciais.</p>
 
           <form onSubmit={handleSubmit(onSubmit)} onChange={() => error && reset()} noValidate className="flex flex-col gap-4">
             <Field id="tenantId" label="ID da clínica" icon={<Building2 size={15} />} error={errors.tenantId?.message}>
@@ -169,7 +195,7 @@ export default function LoginPage() {
             {error && (
               <div
                 role="alert"
-                className="animate-shake flex items-start gap-2 rounded-md border border-danger/30 bg-danger/10 px-3 py-2.5 text-[12px] text-danger"
+                className="animate-shake flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-[13px] text-danger"
               >
                 <AlertCircle size={14} className="mt-px shrink-0" />
                 <span>{getApiErrorMessage(error, 'Não foi possível entrar. Verifique os dados e tente novamente.')}</span>
@@ -179,7 +205,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="mt-2 flex items-center justify-center gap-2 rounded-md bg-teal px-5 py-2.5 text-sm font-semibold text-bg-0 transition hover:bg-teal-hi active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2 flex h-11 items-center justify-center gap-2 rounded-lg bg-brand px-5 text-[15px] font-semibold text-on-brand shadow-sm transition hover:bg-brand-hi active:translate-y-px disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isPending && <Loader2 size={16} className="animate-spin" />}
               Entrar
@@ -190,7 +216,7 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Link to="/forgot-password" className="mt-1 text-center text-xs text-text-3 transition hover:text-teal">
+            <Link to="/forgot-password" className="mt-1 text-center text-[13px] text-text-3 transition hover:text-brand">
               Esqueceu a senha?
             </Link>
           </form>

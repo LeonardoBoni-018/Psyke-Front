@@ -113,6 +113,10 @@ export const router = createBrowserRouter([
         element: <SuspendedPage><ProfessionalFormPage /></SuspendedPage>,
       },
       {
+        path: 'professionals/:id/edit',
+        element: <SuspendedPage><ProfessionalFormPage /></SuspendedPage>,
+      },
+      {
         path: 'reports',
         element: <SuspendedPage><ReportsPage /></SuspendedPage>,
       },

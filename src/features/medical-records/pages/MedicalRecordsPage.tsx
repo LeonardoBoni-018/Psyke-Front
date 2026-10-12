@@ -34,19 +34,19 @@ function EvolucaoCard({ evolucao }: { evolucao: EvolucaoClinicaResponse }) {
       </div>
       <div className="space-y-3">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-info">S</span>
+          <span className="text-[11px] font-bold text-info">S</span>
           <p className="mt-0.5 text-sm text-text-2 leading-relaxed">{evolucao.subjective}</p>
         </div>
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-amber">O</span>
+          <span className="text-[11px] font-bold text-amber">O</span>
           <p className="mt-0.5 text-sm text-text-2 leading-relaxed">{evolucao.objective}</p>
         </div>
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-teal">A</span>
+          <span className="text-[11px] font-bold text-teal">A</span>
           <p className="mt-0.5 text-sm text-text-2 leading-relaxed">{evolucao.assessment}</p>
         </div>
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-danger">P</span>
+          <span className="text-[11px] font-bold text-danger">P</span>
           <p className="mt-0.5 text-sm text-text-2 leading-relaxed">{evolucao.plan}</p>
         </div>
       </div>
@@ -292,7 +292,7 @@ export default function MedicalRecordsPage() {
             <h2 className="mb-4 text-base font-semibold text-text-1">Criar prontuário</h2>
             <form onSubmit={handleCreateProntuario} className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Alergias</label>
+                <label className="text-[11px] text-text-3">Alergias</label>
                 <textarea
                   value={createForm.allergies}
                   onChange={(e) => setCreateForm({ ...createForm, allergies: e.target.value })}
@@ -301,7 +301,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Condições crônicas</label>
+                <label className="text-[11px] text-text-3">Condições crônicas</label>
                 <textarea
                   value={createForm.chronicConditions}
                   onChange={(e) => setCreateForm({ ...createForm, chronicConditions: e.target.value })}
@@ -310,7 +310,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Medicamentos</label>
+                <label className="text-[11px] text-text-3">Medicamentos</label>
                 <textarea
                   value={createForm.medications}
                   onChange={(e) => setCreateForm({ ...createForm, medications: e.target.value })}
@@ -319,7 +319,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Notas</label>
+                <label className="text-[11px] text-text-3">Notas</label>
                 <textarea
                   value={createForm.notes}
                   onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
@@ -401,7 +401,7 @@ export default function MedicalRecordsPage() {
           {editing ? (
             <form onSubmit={handleEditProntuario} className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Alergias</label>
+                <label className="text-[11px] text-text-3">Alergias</label>
                 <textarea
                   value={editForm.allergies}
                   onChange={(e) => setEditForm({ ...editForm, allergies: e.target.value })}
@@ -410,7 +410,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Condições crônicas</label>
+                <label className="text-[11px] text-text-3">Condições crônicas</label>
                 <textarea
                   value={editForm.chronicConditions}
                   onChange={(e) => setEditForm({ ...editForm, chronicConditions: e.target.value })}
@@ -419,7 +419,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Medicamentos</label>
+                <label className="text-[11px] text-text-3">Medicamentos</label>
                 <textarea
                   value={editForm.medications}
                   onChange={(e) => setEditForm({ ...editForm, medications: e.target.value })}
@@ -428,7 +428,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Notas</label>
+                <label className="text-[11px] text-text-3">Notas</label>
                 <textarea
                   value={editForm.notes}
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
@@ -452,19 +452,19 @@ export default function MedicalRecordsPage() {
           ) : (
             <div className="space-y-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Alergias</p>
+                <p className="text-[11px] text-text-3">Alergias</p>
                 <p className="mt-0.5 text-sm text-text-1">{prontuario.allergies || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Condições crônicas</p>
+                <p className="text-[11px] text-text-3">Condições crônicas</p>
                 <p className="mt-0.5 text-sm text-text-1">{prontuario.chronicConditions || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Medicamentos</p>
+                <p className="text-[11px] text-text-3">Medicamentos</p>
                 <p className="mt-0.5 text-sm text-text-1">{prontuario.medications || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Notas</p>
+                <p className="text-[11px] text-text-3">Notas</p>
                 <p className="mt-0.5 text-sm text-text-1">{prontuario.notes || '—'}</p>
               </div>
             </div>
@@ -500,7 +500,7 @@ export default function MedicalRecordsPage() {
           {showAnamneseForm && (
             <form onSubmit={handleCreateAnamnese} className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Queixa principal</label>
+                <label className="text-[11px] text-text-3">Queixa principal</label>
                 <textarea
                   value={anamneseForm.chiefComplaint}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, chiefComplaint: e.target.value })}
@@ -509,7 +509,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Histórico</label>
+                <label className="text-[11px] text-text-3">Histórico</label>
                 <textarea
                   value={anamneseForm.history}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, history: e.target.value })}
@@ -518,7 +518,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">História familiar</label>
+                <label className="text-[11px] text-text-3">História familiar</label>
                 <textarea
                   value={anamneseForm.familyHistory}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, familyHistory: e.target.value })}
@@ -527,7 +527,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">História pessoal</label>
+                <label className="text-[11px] text-text-3">História pessoal</label>
                 <textarea
                   value={anamneseForm.personalHistory}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, personalHistory: e.target.value })}
@@ -536,7 +536,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Medicamentos em uso</label>
+                <label className="text-[11px] text-text-3">Medicamentos em uso</label>
                 <textarea
                   value={anamneseForm.medications}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, medications: e.target.value })}
@@ -545,7 +545,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Padrão de sono</label>
+                <label className="text-[11px] text-text-3">Padrão de sono</label>
                 <textarea
                   value={anamneseForm.sleepPattern}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, sleepPattern: e.target.value })}
@@ -554,7 +554,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Uso de substâncias</label>
+                <label className="text-[11px] text-text-3">Uso de substâncias</label>
                 <textarea
                   value={anamneseForm.substanceUse}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, substanceUse: e.target.value })}
@@ -563,7 +563,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Risco de suicídio</label>
+                <label className="text-[11px] text-text-3">Risco de suicídio</label>
                 <textarea
                   value={anamneseForm.suicideRisk}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, suicideRisk: e.target.value })}
@@ -572,7 +572,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Histórico de trauma</label>
+                <label className="text-[11px] text-text-3">Histórico de trauma</label>
                 <textarea
                   value={anamneseForm.traumaHistory}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, traumaHistory: e.target.value })}
@@ -581,7 +581,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">Suporte social</label>
+                <label className="text-[11px] text-text-3">Suporte social</label>
                 <textarea
                   value={anamneseForm.socialSupport}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, socialSupport: e.target.value })}
@@ -590,7 +590,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">História do desenvolvimento</label>
+                <label className="text-[11px] text-text-3">História do desenvolvimento</label>
                 <textarea
                   value={anamneseForm.developmentalHistory}
                   onChange={(e) => setAnamneseForm({ ...anamneseForm, developmentalHistory: e.target.value })}
@@ -616,48 +616,48 @@ export default function MedicalRecordsPage() {
           {!anamneseLoading && anamnese && (
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Queixa principal</p>
+                <p className="text-[11px] text-text-3">Queixa principal</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.chiefComplaint || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Histórico</p>
+                <p className="text-[11px] text-text-3">Histórico</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.history || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">História familiar</p>
+                <p className="text-[11px] text-text-3">História familiar</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.familyHistory || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">História pessoal</p>
+                <p className="text-[11px] text-text-3">História pessoal</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.personalHistory || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Medicamentos em uso</p>
+                <p className="text-[11px] text-text-3">Medicamentos em uso</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.medications || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Padrão de sono</p>
+                <p className="text-[11px] text-text-3">Padrão de sono</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.sleepPattern || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Uso de substâncias</p>
+                <p className="text-[11px] text-text-3">Uso de substâncias</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.substanceUse || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Risco de suicídio</p>
+                <p className="text-[11px] text-text-3">Risco de suicídio</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.suicideRisk || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Histórico de trauma</p>
+                <p className="text-[11px] text-text-3">Histórico de trauma</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.traumaHistory || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">Suporte social</p>
+                <p className="text-[11px] text-text-3">Suporte social</p>
                 <p className="mt-0.5 text-sm text-text-1">{anamnese.socialSupport || '—'}</p>
               </div>
               {anamnese.developmentalHistory && (
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">História do desenvolvimento</p>
+                  <p className="text-[11px] text-text-3">História do desenvolvimento</p>
                   <p className="mt-0.5 text-sm text-text-1">{anamnese.developmentalHistory}</p>
                 </div>
               )}
@@ -683,7 +683,7 @@ export default function MedicalRecordsPage() {
             <h3 className="mb-4 text-sm font-semibold text-text-1">Nova evolução clínica</h3>
             <form onSubmit={handleAddEvolucao} className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">ID do agendamento</label>
+                <label className="text-[11px] text-text-3">ID do agendamento</label>
                 <input
                   type="text"
                   value={evolucaoForm.appointmentId}
@@ -693,7 +693,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-info">
+                <label className="flex items-center gap-1.5 text-[11px] text-info">
                   <span className="font-bold">S</span> Subjetivo
                 </label>
                 <textarea
@@ -705,7 +705,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-amber">
+                <label className="flex items-center gap-1.5 text-[11px] text-amber">
                   <span className="font-bold">O</span> Objetivo
                 </label>
                 <textarea
@@ -717,7 +717,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-teal">
+                <label className="flex items-center gap-1.5 text-[11px] text-teal">
                   <span className="font-bold">A</span> Avaliação
                 </label>
                 <textarea
@@ -729,7 +729,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-danger">
+                <label className="flex items-center gap-1.5 text-[11px] text-danger">
                   <span className="font-bold">P</span> Plano
                 </label>
                 <textarea
@@ -741,7 +741,7 @@ export default function MedicalRecordsPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-[0.12em] text-text-3">
+                <label className="text-[11px] text-text-3">
                   Técnicas <span className="text-text-3 font-normal normal-case">(separadas por vírgula)</span>
                 </label>
                 <input

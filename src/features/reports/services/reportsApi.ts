@@ -1,25 +1,13 @@
 import { api } from '@/lib/axios'
-import type {
-  ClinicalReportParams,
-  ClinicalReportSummary,
-  FinancialReportParams,
-  FinancialReportSummary,
-} from '@/types/reports'
+import type { ReportExport, ReportParams, ReportSummary } from '@/types/reports'
 
-export async function getFinancialReportSummary(
-  params: FinancialReportParams,
-): Promise<FinancialReportSummary> {
-  const response = await api.get<FinancialReportSummary>('/reports/financial', {
-    params,
-  })
+export async function getReportSummary(params: ReportParams): Promise<ReportSummary> {
+  const response = await api.get<ReportSummary>('/reports/summary', { params })
   return response.data
 }
 
-export async function getClinicalReportSummary(
-  params: ClinicalReportParams,
-): Promise<ClinicalReportSummary> {
-  const response = await api.get<ClinicalReportSummary>('/reports/clinical', {
-    params,
-  })
+/** Downloads a CSV export (`appointments` or `invoices`) for the period as a Blob. */
+export async function exportReportCsv(kind: ReportExport, params: ReportParams): Promise<Blob> {
+  const response = await api.get<Blob>(`/reports/${kind}`, { params, responseType: 'blob' })
   return response.data
 }

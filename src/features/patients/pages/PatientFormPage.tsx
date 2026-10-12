@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, User, Calendar, CreditCard, Phone, Mail, Briefcase, UserPlus } from 'lucide-react'
+import { ArrowLeft, User, Calendar, CreditCard, Phone, Mail, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { FormField, inputClass } from '@/components/ui/FormField'
 import { useCreatePatient } from '@/features/patients/hooks/useCreatePatient'
@@ -43,26 +43,21 @@ export default function PatientFormPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 pt-2 sm:pt-4">
       <button
         type="button"
         onClick={() => navigate('/patients')}
-        className="inline-flex items-center gap-1.5 text-[13px] text-text-3 transition hover:text-text-1"
+        className="inline-flex items-center gap-1.5 text-[13px] text-text-2 transition hover:text-text-1"
       >
         <ArrowLeft size={14} /> Pacientes
       </button>
 
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
-          <UserPlus size={20} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-serif text-text-1">Novo paciente</h1>
-          <p className="text-sm text-text-3">Preencha os dados do paciente</p>
-        </div>
-      </div>
+      <header>
+        <h1 className="text-[28px] leading-tight text-text-1 sm:text-[32px]">Novo paciente</h1>
+        <p className="mt-1 text-[15px] text-text-2">Só o nome é obrigatório; o resto pode ser preenchido depois.</p>
+      </header>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="animate-scale-in space-y-5 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="surface space-y-5 p-5 sm:p-8">
         <FormField icon={User} label="Nome completo" error={formState.errors.fullName?.message}>
           <input id="fullName" type="text" autoComplete="name" {...register('fullName')} className={inputClass} />
         </FormField>

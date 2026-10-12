@@ -20,6 +20,6 @@ describe('StatusBadge', () => {
   it('applies sm size class', () => {
     const { container } = render(<StatusBadge status="ACTIVE" size="sm" />)
     const span = container.firstChild as HTMLElement
-    expect(span.className).toContain('text-[10px]')
+    expect(span.className).toContain('text-[11px]')
   })
 })

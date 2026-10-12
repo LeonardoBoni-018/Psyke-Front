@@ -1,48 +1,96 @@
 /*
- * Psyke design tokens — dark, dense, calm for all-day clinical use.
- * Contrast: text-1/2/3 all pass WCAG AA (≥ 4.5:1) on bg-0…bg-2.
+ * Psyke design tokens.
+ *
+ * Two themes share one hue family (pine green on a green-grey canvas) so the product feels the same in
+ * both. Light is the default; `data-theme="dark"` is set on <html> by public/theme-init.js (before first
+ * paint) and by the theme toggle. Text tokens meet WCAG AA on bg-0…bg-2 in both themes.
+ *
+ * Legacy names (--teal*, --font-serif, --font-mono) remain as aliases so older components keep working;
+ * new code should use --brand* and --font-display.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --bg-0: #080c0f;
-  --bg-1: #0d1318;
-  --bg-2: #121a21;
-  --bg-3: #18232c;
-  --border: #1e2d38;
-  --border-hi: #2c4152;
+  --bg-0: #f3f5f2; /* app canvas */
+  --bg-1: #ffffff; /* cards, sidebar items, popovers */
+  --bg-2: #ecf0ed; /* inputs, quiet fills */
+  --bg-3: #e2e8e3; /* hover on bg-2 */
+  --border: #dde3de;
+  --border-hi: #c2cbc4;
 
-  --teal: #0ec4a0;
-  --teal-hi: #2fe0bb;
-  --teal-dim: #0a8f74;
-  --teal-10: rgba(14, 196, 160, 0.1);
-  --teal-20: rgba(14, 196, 160, 0.2);
-  --amber: #f5a623;
-  --amber-10: rgba(245, 166, 35, 0.12);
-  --danger: #ef6b6b;
-  --danger-10: rgba(239, 107, 107, 0.12);
-  --info: #5aa7ff;
-  --info-10: rgba(90, 167, 255, 0.12);
+  --brand: #1d6a57;
+  --brand-hi: #16594a;
+  --brand-dim: #4f9b87;
+  --on-brand: #ffffff;
+  --brand-10: color-mix(in srgb, var(--brand) 10%, transparent);
+  --brand-20: color-mix(in srgb, var(--brand) 20%, transparent);
 
-  --text-1: #e8eef2;
-  --text-2: #a3b8c6;
-  --text-3: #7590a3;
+  --amber: #a5660a;
+  --amber-10: color-mix(in srgb, var(--amber) 12%, transparent);
+  --danger: #c0392f;
+  --danger-10: color-mix(in srgb, var(--danger) 10%, transparent);
+  --info: #2c5bcf;
+  --info-10: color-mix(in srgb, var(--info) 10%, transparent);
 
-  --font-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-sans: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --text-1: #16201c;
+  --text-2: #46544e;
+  --text-3: #62726b;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
+  --shadow-sm: 0 1px 2px rgb(22 32 28 / 0.05), 0 1px 1px rgb(22 32 28 / 0.03);
+  --shadow-md: 0 8px 24px -8px rgb(22 32 28 / 0.14), 0 2px 6px rgb(22 32 28 / 0.05);
+  --shadow-lg: 0 28px 70px -24px rgb(22 32 28 / 0.28), 0 6px 16px rgb(22 32 28 / 0.06);
+  --scrim: rgb(14 22 18 / 0.45);
 
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55);
+  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+  --radius-xl: 18px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --sidebar-w: 232px;
-  --topbar-h: 56px;
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --sidebar-w: 248px;
+  --topbar-h: 60px;
+
+  /* aliases (legacy names) */
+  --teal: var(--brand);
+  --teal-hi: var(--brand-hi);
+  --teal-dim: var(--brand-dim);
+  --teal-10: var(--brand-10);
+  --teal-20: var(--brand-20);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-sans);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-0: #0d1210;
+  --bg-1: #151c19;
+  --bg-2: #1b2421;
+  --bg-3: #232e2a;
+  --border: #27332e;
+  --border-hi: #3a4a43;
+
+  --brand: #56c4a2;
+  --brand-hi: #7ad8ba;
+  --brand-dim: #2f8f75;
+  --on-brand: #08120e;
+
+  --amber: #e8b04a;
+  --danger: #f08178;
+  --info: #7ea2ff;
+
+  --text-1: #e8efeb;
+  --text-2: #a9b8b1;
+  --text-3: #84968e;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 10px 28px -10px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 30px 70px -24px rgb(0 0 0 / 0.7);
+  --scrim: rgb(0 0 0 / 0.6);
 }
 
 *, *::before, *::after {
@@ -76,9 +124,18 @@ body {
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Smooth theme switch without animating every property on every element. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, fill 200ms ease !important;
 }
 
 button,
@@ -102,6 +159,9 @@ option {
 }
 
 h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -110,19 +170,19 @@ p {
 }
 
 ::selection {
-  background: var(--teal-20);
+  background: var(--brand-20);
 }
 
 /* Visible keyboard focus everywhere; mouse clicks don't show rings. */
 :focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -130,34 +190,41 @@ p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 8px;
-  border: 2px solid var(--bg-0);
-}
-
-::-webkit-scrollbar-thumb:hover {
   background: var(--border-hi);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
-.font-serif { font-family: var(--font-serif); font-weight: 400; }
-.font-mono { font-family: var(--font-mono); }
+.font-serif { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
+.font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+.font-mono { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
 .tabular { font-variant-numeric: tabular-nums; }
 
 .skip-link {
   position: absolute;
   left: 12px;
-  top: -48px;
+  top: -56px;
   z-index: 100;
   padding: 8px 14px;
   border-radius: var(--radius-md);
-  background: var(--teal);
-  color: var(--bg-0);
+  background: var(--brand);
+  color: var(--on-brand);
   font-weight: 600;
   transition: top 150ms var(--ease-out);
 }
 
 .skip-link:focus {
   top: 12px;
+}
+
+/* ---------- surfaces ---------- */
+
+.surface {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Wide tables scroll inside their card instead of squeezing columns or the whole page. */
@@ -176,11 +243,11 @@ main {
   min-width: 0;
 }
 
-/* Dashboard: stats rail + content on desktop, stacked on tablets/phones. */
+/* Dashboard: main column + side rail on desktop, stacked on tablets/phones. */
 .dash-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -194,8 +261,8 @@ main {
   .dash-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-@media (min-width: 900px) {
-  .dash-grid { grid-template-columns: 220px minmax(0, 1fr); }
+@media (min-width: 1100px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr) 340px; }
 }
 
 /* ---------- motion ---------- */
@@ -203,7 +270,7 @@ main {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -213,8 +280,8 @@ main {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes popIn {
@@ -237,12 +304,17 @@ main {
   100% { background-position:  200% 0; }
 }
 
-@keyframes pulseTeal {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 196, 160, 0.45); }
-  50%      { box-shadow: 0 0 0 5px rgba(14, 196, 160, 0); }
+@keyframes pulseBrand {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -251,18 +323,30 @@ main {
   75%      { transform: translateX(-2px); }
 }
 
-.page-enter { animation: pageIn 160ms var(--ease-out) both; }
-.rise-in { animation: riseIn 320ms var(--ease-out) both; }
-/* List rows: pair with an inline animationDelay (35-50ms steps) for a short stagger. */
-.item-enter { animation: riseIn 260ms var(--ease-out) both; }
+@keyframes drawLine {
+  from { stroke-dashoffset: var(--len, 1000); }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes growUp {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.page-enter { animation: pageIn 220ms var(--ease-out) both; }
+.rise-in { animation: riseIn 420ms var(--ease-out) both; }
+/* List rows and cards: pair with an inline animationDelay (35-60ms steps) for a short stagger. */
+.item-enter { animation: riseIn 340ms var(--ease-out) both; }
 .animate-fade-in { animation: fadeIn 160ms ease both; }
-.animate-scale-in { animation: scaleIn 180ms var(--ease-out) both; }
+.animate-scale-in { animation: scaleIn 200ms var(--ease-out) both; }
 .animate-pop-in { animation: popIn 160ms var(--ease-out) both; transform-origin: top center; }
-.animate-slide-right { animation: slideInRight 220ms var(--ease-out) both; }
-.animate-slide-left { animation: slideInLeft 220ms var(--ease-out) both; }
+.animate-slide-right { animation: slideInRight 260ms var(--ease-out) both; }
+.animate-slide-left { animation: slideInLeft 260ms var(--ease-out) both; }
 .animate-spin { animation: spin 0.75s linear infinite; }
 .animate-shake { animation: shake 0.28s ease; }
-.animate-pulse-live { animation: pulseTeal 2s ease-in-out infinite; }
+.animate-pulse-live { animation: pulseBrand 2s ease-in-out infinite; }
+.animate-draw { stroke-dasharray: var(--len, 1000); animation: drawLine 900ms var(--ease-out) 150ms both; }
+.animate-grow { transform-origin: bottom; animation: growUp 600ms var(--ease-out) both; }
 
 .animate-shimmer {
   background: linear-gradient(90deg, var(--bg-2) 25%, var(--bg-3) 50%, var(--bg-2) 75%);
@@ -270,19 +354,60 @@ main {
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* ---------- FullCalendar theme ---------- */
+/* Hover lift for clickable cards. */
+.lift {
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms ease;
+}
 
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-hi);
+  }
+}
+
+.lift:active { transform: translateY(0) scale(0.995); }
+
+/* Route changes (React Router `viewTransition`): quick cross-fade with a small rise. */
+@keyframes vtOut { to { opacity: 0; } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(8px); } }
+
+::view-transition-old(root) { animation: vtOut 110ms ease both; }
+::view-transition-new(root) { animation: vtIn 260ms var(--ease-out) 60ms both; }
+
+/* ---------- FullCalendar theme ---------- */
 .calendar-wrapper {
   --fc-border-color: var(--border);
   --fc-page-bg-color: var(--bg-1);
-  --fc-today-bg-color: rgba(14, 196, 160, 0.05);
+  --fc-today-bg-color: color-mix(in srgb, var(--brand) 6%, transparent);
   --fc-neutral-bg-color: var(--bg-2);
-  --fc-event-bg-color: var(--teal);
-  --fc-event-border-color: var(--teal);
-  --fc-event-text-color: var(--bg-0);
+  --fc-event-bg-color: var(--brand);
+  --fc-event-border-color: var(--brand);
+  --fc-event-text-color: var(--text-1);
   --fc-list-event-hover-bg-color: var(--bg-2);
   --fc-now-indicator-color: var(--danger);
   --fc-highlight-color: var(--teal-10);
+}
+
+/* Session colors follow the status and the theme (the API's fixed hex colors are ignored). */
+.calendar-wrapper .fc-event {
+  --ev: var(--brand);
+  background: color-mix(in srgb, var(--ev) 16%, var(--bg-1));
+  border-color: var(--ev);
+  color: var(--text-1);
+}
+
+.calendar-wrapper .ev-SCHEDULED { --ev: var(--amber); }
+.calendar-wrapper .ev-CONFIRMED { --ev: var(--brand); }
+.calendar-wrapper .ev-DONE { --ev: var(--text-3); }
+.calendar-wrapper .ev-CANCELLED,
+.calendar-wrapper .ev-NO_SHOW { --ev: var(--danger); opacity: 0.75; }
+
+.calendar-wrapper .fc-event .fc-event-main,
+.calendar-wrapper .fc-event .fc-event-title,
+.calendar-wrapper .fc-event .fc-event-time {
+  color: var(--text-1);
 }
 
 .calendar-wrapper .fc {
@@ -323,15 +448,15 @@ main {
 }
 
 .calendar-wrapper .fc .fc-button:focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
 .calendar-wrapper .fc .fc-button-primary:not(:disabled).fc-button-active,
 .calendar-wrapper .fc .fc-button-primary:not(:disabled):active {
   background: var(--teal-10);
-  border-color: var(--teal);
-  color: var(--teal);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .calendar-wrapper .fc .fc-button:disabled {
@@ -352,7 +477,7 @@ main {
 }
 
 .calendar-wrapper .fc .fc-day-today .fc-col-header-cell-cushion {
-  color: var(--teal);
+  color: var(--brand);
 }
 
 .calendar-wrapper .fc .fc-timegrid-slot {
@@ -408,7 +533,7 @@ main {
 }
 
 .calendar-wrapper .fc .fc-non-business {
-  background: rgba(18, 26, 33, 0.6);
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
 }
 
 .calendar-wrapper .fc .fc-scrollgrid {
@@ -434,7 +559,7 @@ main {
 
 .calendar-wrapper .fc .fc-daygrid-more-link {
   font-size: 11px;
-  color: var(--teal);
+  color: var(--brand);
 }
 
 .calendar-wrapper .fc .fc-list {
@@ -460,5 +585,11 @@ main {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

@@ -1,33 +1,33 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useFinancialSummary, useCharges, useCreateCharge, useMarkChargePaid, useExportCharge } from './useFinancial'
-import { getFinancialSummary, listCharges, createCharge, markChargePaid, exportCharge } from '@/features/financial/services/financialApi'
 import type { ReactNode } from 'react'
+import { useCreateInvoice, useFinancialSummary, useInvoices, useMarkInvoicePaid } from './useFinancial'
+import {
+  createInvoice,
+  getFinancialSummary,
+  listInvoices,
+  markInvoicePaid,
+} from '@/features/financial/services/financialApi'
+
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
 vi.mock('@/features/financial/services/financialApi', () => ({
   getFinancialSummary: vi.fn(),
-  listCharges: vi.fn(),
-  createCharge: vi.fn(),
-  markChargePaid: vi.fn(),
-  exportCharge: vi.fn(),
+  listInvoices: vi.fn(),
+  createInvoice: vi.fn(),
+  markInvoicePaid: vi.fn(),
+  cancelInvoice: vi.fn(),
+  exportInvoicePdf: vi.fn(),
 }))
 
-const mockCharge = {
-  id: 'charge-1',
-  patientId: 'patient-1',
-  description: 'Consulta',
+const invoice = {
+  id: 'inv-1',
+  patientId: 'p1',
+  professionalId: 'pr1',
   amount: 200,
-  dueDate: '2026-06-15',
-  paid: false,
-}
-
-const mockSummary = {
-  totalRevenue: 5000,
-  totalReceivables: 2000,
-  totalPaid: 3000,
-  overdueAmount: 500,
-  openInvoices: 10,
-  revenueSeries: [{ month: '2026-05', amount: 5000 }],
+  status: 'PENDING' as const,
+  createdAt: '2026-06-01T10:00:00Z',
+  updatedAt: '2026-06-01T10:00:00Z',
 }
 
 function createWrapper() {
@@ -38,79 +38,47 @@ function createWrapper() {
 }
 
 describe('useFinancial', () => {
-  describe('useFinancialSummary', () => {
-    it('returns summary data on success', async () => {
-      vi.mocked(getFinancialSummary).mockResolvedValue(mockSummary)
-
-      const { result } = renderHook(() => useFinancialSummary(), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(result.current.data).toEqual(mockSummary)
-    })
-
-    it('returns error on failure', async () => {
-      vi.mocked(getFinancialSummary).mockRejectedValue(new Error('Network error'))
-
-      const { result } = renderHook(() => useFinancialSummary(), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(result.current.isError).toBe(true))
-    })
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  describe('useCharges', () => {
-    it('returns charges list on success', async () => {
-      const response = { content: [mockCharge], totalElements: 1, totalPages: 1, number: 0, size: 10 }
-      vi.mocked(listCharges).mockResolvedValue(response)
+  it('returns the financial summary', async () => {
+    const summary = { monthlyRevenue: 3200, pendingAmount: 2720, pendingCount: 7, paidCount: 50 }
+    vi.mocked(getFinancialSummary).mockResolvedValue(summary)
 
-      const { result } = renderHook(() => useCharges({ status: 'open' }), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useFinancialSummary(), { wrapper: createWrapper() })
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(result.current.data).toEqual(response)
-    })
-
-    it('calls with correct params', async () => {
-      vi.mocked(listCharges).mockResolvedValue({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 10 })
-
-      renderHook(() => useCharges({ status: 'paid', page: 0, size: 5 }), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(listCharges).toHaveBeenCalledWith({ status: 'paid', page: 0, size: 5 }))
-    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data).toEqual(summary)
   })
 
-  describe('useCreateCharge', () => {
-    it('calls createCharge on mutate', async () => {
-      vi.mocked(createCharge).mockResolvedValue(mockCharge)
+  it('returns the invoice list', async () => {
+    vi.mocked(listInvoices).mockResolvedValue({ content: [invoice], totalElements: 1, totalPages: 1, number: 0, size: 10 })
 
-      const { result } = renderHook(() => useCreateCharge(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useInvoices({ status: 'PENDING' }), { wrapper: createWrapper() })
 
-      result.current.mutate({ patientId: 'p1', description: 'Test', amount: 100, dueDate: '2026-07-01' })
-
-      await waitFor(() => expect(createCharge).toHaveBeenCalled())
-    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.content[0].id).toBe('inv-1')
+    expect(listInvoices).toHaveBeenCalledWith({ status: 'PENDING' })
   })
 
-  describe('useMarkChargePaid', () => {
-    it('calls markChargePaid on mutate', async () => {
-      vi.mocked(markChargePaid).mockResolvedValue({ ...mockCharge, paid: true })
+  it('creates an invoice', async () => {
+    vi.mocked(createInvoice).mockResolvedValue(invoice)
 
-      const { result } = renderHook(() => useMarkChargePaid(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useCreateInvoice(), { wrapper: createWrapper() })
+    result.current.mutate({ patientId: 'p1', professionalId: 'pr1', amount: 200 })
 
-      result.current.mutate('charge-1')
-
-      await waitFor(() => expect(markChargePaid).toHaveBeenCalled())
-    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(createInvoice).toHaveBeenCalledWith({ patientId: 'p1', professionalId: 'pr1', amount: 200 }, expect.anything())
   })
 
-  describe('useExportCharge', () => {
-    it('calls exportCharge on mutate', async () => {
-      const blob = new Blob()
-      vi.mocked(exportCharge).mockResolvedValue(blob)
+  it('marks an invoice as paid', async () => {
+    vi.mocked(markInvoicePaid).mockResolvedValue({ ...invoice, status: 'PAID' })
 
-      const { result } = renderHook(() => useExportCharge(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useMarkInvoicePaid(), { wrapper: createWrapper() })
+    result.current.mutate('inv-1')
 
-      result.current.mutate('charge-1')
-
-      await waitFor(() => expect(exportCharge).toHaveBeenCalled())
-    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(markInvoicePaid).toHaveBeenCalledWith('inv-1')
   })
 })

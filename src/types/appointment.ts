@@ -13,6 +13,10 @@ export interface AppointmentResponse {
   notes: string | null
   createdAt: string
   updatedAt: string
+  /** Display names, filled in by the list/detail endpoints. */
+  patientName?: string | null
+  professionalName?: string | null
+  roomName?: string | null
 }
 
 export interface AppointmentRequest {

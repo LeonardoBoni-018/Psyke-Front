@@ -4,25 +4,34 @@ interface FormFieldProps {
   icon?: ComponentType<{ size?: number; className?: string }>
   label: string
   error?: string
+  /** Extra hint shown under the control when there is no error. */
+  hint?: string
   children: ReactNode
 }
 
-export const inputClass = "w-full bg-transparent text-text-1 outline-none placeholder:text-text-3"
+export const inputClass = 'w-full bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-3'
 
-export function FormField({ icon: Icon, label, error, children }: FormFieldProps) {
+/**
+ * Labelled control. The whole block is a <label>, so clicking the text focuses the input and screen readers
+ * announce the name. Don't put another <label> inside (use a <div> with `htmlFor` for checkboxes).
+ */
+export function FormField({ icon: Icon, label, error, hint, children }: FormFieldProps) {
   return (
-    <div className="space-y-1">
-      <label className="block text-sm font-medium text-text-2">{label}</label>
-      <div className="flex items-center gap-3 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:shadow-[0_0_0_3px_var(--teal-10)]">
-        {Icon && <Icon size={18} className="shrink-0 text-text-3" />}
+    <label className="block space-y-1.5">
+      <span className="block text-[13px] font-medium text-text-2">{label}</span>
+      <span
+        className={`flex min-h-10 items-center gap-3 rounded-lg border bg-bg-1 px-3 shadow-sm transition focus-within:shadow-focus ${
+          error ? 'border-danger' : 'border-border focus-within:border-brand'
+        }`}
+      >
+        {Icon && <Icon size={17} className="shrink-0 text-text-3" />}
         {children}
-      </div>
-      {error && (
-        <p className="mt-1 flex items-center gap-1 text-[11px] text-danger font-mono">
-          <span className="inline-block h-1 w-1 rounded-full bg-danger" />
-          {error}
-        </p>
-      )}
-    </div>
+      </span>
+      {error ? (
+        <span role="alert" className="block text-xs text-danger">{error}</span>
+      ) : hint ? (
+        <span className="block text-xs text-text-3">{hint}</span>
+      ) : null}
+    </label>
   )
 }

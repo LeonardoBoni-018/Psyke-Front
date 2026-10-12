@@ -1,44 +1,88 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { format, startOfWeek, endOfWeek } from 'date-fns'
-import { Plus, Calendar, User, Clock, FileText, X, ChevronRight } from 'lucide-react'
+import { format, parseISO, startOfWeek, endOfWeek } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import * as Dialog from '@radix-ui/react-dialog'
+import { Clock, DoorOpen, FileText, Plus, Stethoscope, User, X } from 'lucide-react'
 import CalendarView from '@/features/agenda/components/CalendarView/CalendarView'
-import { useCalendarEvents, useAppointment, useUpdateStatus, useDeleteAppointment, useCreateSession } from '@/features/agenda/hooks/useAppointments'
+import {
+  useAppointment,
+  useCalendarEvents,
+  useCreateSession,
+  useDeleteAppointment,
+  useUpdateStatus,
+} from '@/features/agenda/hooks/useAppointments'
 import { Button } from '@/components/ui/Button/Button'
-import type { CalendarEvent } from '@/types/appointment'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { PageHeader } from '@/components/layout/PageHeader/PageHeader'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import type { AppointmentResponse, CalendarEvent } from '@/types/appointment'
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  SCHEDULED: { label: 'Agendado', color: 'var(--info)', bg: 'rgba(74,158,255,0.1)' },
-  CONFIRMED: { label: 'Confirmado', color: 'var(--teal)', bg: 'rgba(14,196,160,0.1)' },
-  CANCELLED: { label: 'Cancelado', color: 'var(--danger)', bg: 'rgba(224,85,85,0.1)' },
-  NO_SHOW: { label: 'Falta', color: 'var(--amber)', bg: 'rgba(245,166,35,0.1)' },
-  DONE: { label: 'Realizado', color: 'var(--text-3)', bg: 'rgba(74,100,120,0.1)' },
-}
-
-function AgendaSkeleton() {
+function DetailRow({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string }) {
   return (
-    <div className="page-enter flex gap-6">
-      <div className="flex-1 space-y-4">
-        <div className="h-10 w-64 animate-shimmer rounded-xl" />
-        <div className="h-[600px] animate-shimmer rounded-2xl" />
-      </div>
-      <div className="w-80 space-y-4">
-        <div className="h-8 w-40 animate-shimmer rounded-xl" />
-        <div className="h-48 animate-shimmer rounded-2xl" />
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bg-2 text-text-3">
+        <Icon size={15} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs text-text-3">{label}</p>
+        <p className="mt-0.5 break-words text-[14px] text-text-1">{value}</p>
       </div>
     </div>
   )
 }
 
-function DetailRow({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string }) {
+interface DetailsProps {
+  title: string
+  appointment: AppointmentResponse
+  busy: { status: boolean; session: boolean; remove: boolean }
+  onConfirm: () => void
+  onCancel: () => void
+  onStartSession: () => void
+  onDelete: () => void
+}
+
+function AppointmentDetails({ title, appointment, busy, onConfirm, onCancel, onStartSession, onDelete }: DetailsProps) {
+  const start = parseISO(appointment.startTime)
+  const end = parseISO(appointment.endTime)
+  const when = `${format(start, "EEEE, d 'de' MMMM", { locale: ptBR })} · ${format(start, 'HH:mm')}–${format(end, 'HH:mm')}`
+
   return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-bg-2 text-text-3">
-        <Icon size={14} />
+    <div>
+      <div className="mb-4">
+        <h2 className="text-[19px] text-text-1">{title}</h2>
+        <div className="mt-2">
+          <StatusBadge status={appointment.status} />
+        </div>
       </div>
-      <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-text-3">{label}</p>
-        <p className="mt-0.5 text-sm text-text-1 break-words">{value}</p>
+
+      <div className="space-y-4">
+        <DetailRow icon={Clock} label="Horário" value={when.charAt(0).toUpperCase() + when.slice(1)} />
+        <DetailRow icon={User} label="Paciente" value={appointment.patientName ?? 'Paciente'} />
+        <DetailRow icon={Stethoscope} label="Profissional" value={appointment.professionalName ?? 'Profissional'} />
+        {appointment.roomName && <DetailRow icon={DoorOpen} label="Sala" value={appointment.roomName} />}
+        {appointment.notes && <DetailRow icon={FileText} label="Observações" value={appointment.notes} />}
+      </div>
+
+      <div className="mt-6 space-y-2">
+        {appointment.status === 'SCHEDULED' && (
+          <Button variant="primary" size="md" className="w-full" onClick={onConfirm} loading={busy.status}>
+            Confirmar agendamento
+          </Button>
+        )}
+        {appointment.status === 'CONFIRMED' && (
+          <Button variant="primary" size="md" className="w-full" onClick={onStartSession} loading={busy.session}>
+            Concluir sessão
+          </Button>
+        )}
+        {appointment.status !== 'CANCELLED' && appointment.status !== 'DONE' && (
+          <Button variant="danger" size="md" className="w-full" onClick={onCancel} loading={busy.status}>
+            Cancelar sessão
+          </Button>
+        )}
+        <Button variant="ghost" size="md" className="w-full" onClick={onDelete} loading={busy.remove}>
+          Excluir agendamento
+        </Button>
       </div>
     </div>
   )
@@ -46,155 +90,94 @@ function DetailRow({ icon: Icon, label, value }: { icon: typeof User; label: str
 
 export default function AgendaPage() {
   const navigate = useNavigate()
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
   const today = new Date()
-  const weekStart = startOfWeek(today, { weekStartsOn: 0 })
-  const weekEnd = endOfWeek(today, { weekStartsOn: 0 })
 
-  const [dateRange, setDateRange] = useState({ from: format(weekStart, "yyyy-MM-dd'T'00:00:00"), to: format(weekEnd, "yyyy-MM-dd'T'23:59:59") })
-  const [selectedEvent, setSelectedEvent] = useState<{ id: string; title: string } | null>(null)
+  const [dateRange, setDateRange] = useState({
+    from: format(startOfWeek(today, { weekStartsOn: 0 }), "yyyy-MM-dd'T'00:00:00"),
+    to: format(endOfWeek(today, { weekStartsOn: 0 }), "yyyy-MM-dd'T'23:59:59"),
+  })
+  const [selected, setSelected] = useState<{ id: string; title: string } | null>(null)
 
-  const { data: events, isLoading } = useCalendarEvents(dateRange)
-  const { data: selectedAppointment } = useAppointment(selectedEvent?.id ?? '')
+  const { data: events = [], isFetching } = useCalendarEvents(dateRange)
+  const { data: appointment } = useAppointment(selected?.id ?? '')
   const updateStatus = useUpdateStatus()
   const deleteAppointment = useDeleteAppointment()
   const createSession = useCreateSession()
 
-  const handleEventClick = useCallback((event: CalendarEvent) => {
-    setSelectedEvent({ id: event.id, title: event.title })
+  const handleEventClick = useCallback((event: CalendarEvent) => setSelected({ id: event.id, title: event.title }), [])
+  const handleRangeChange = useCallback((from: string, to: string) => {
+    setDateRange((prev) => (prev.from === from && prev.to === to ? prev : { from, to }))
   }, [])
 
-  const handleDateSelect = useCallback((start: string, end: string) => {
-    setDateRange({ from: start, to: end })
-  }, [])
-
-  const handleConfirm = useCallback(() => {
-    if (!selectedEvent) return
-    updateStatus.mutate({ id: selectedEvent.id, data: { status: 'CONFIRMED' } })
-  }, [selectedEvent, updateStatus])
-
-  const handleCancel = useCallback(() => {
-    if (!selectedEvent) return
-    updateStatus.mutate({ id: selectedEvent.id, data: { status: 'CANCELLED', reason: 'Cancelado pelo usuário' } })
-  }, [selectedEvent, updateStatus])
-
-  const handleCreateSession = useCallback(() => {
-    if (!selectedEvent) return
-    createSession.mutate({ appointmentId: selectedEvent.id, prontuario: '' })
-  }, [selectedEvent, createSession])
-
-  const handleDelete = useCallback(() => {
-    if (!selectedEvent) return
-    deleteAppointment.mutate(selectedEvent.id, {
-      onSuccess: () => setSelectedEvent(null),
-    })
-  }, [selectedEvent, deleteAppointment])
-
-  const statusInfo = selectedAppointment ? STATUS_MAP[selectedAppointment.status] : null
-
-  function fmtId(id: string) {
-    return `#${id.slice(0, 5)}`
-  }
+  const details = selected && appointment && (
+    <AppointmentDetails
+      title={selected.title}
+      appointment={appointment}
+      busy={{ status: updateStatus.isPending, session: createSession.isPending, remove: deleteAppointment.isPending }}
+      onConfirm={() => updateStatus.mutate({ id: selected.id, data: { status: 'CONFIRMED' } })}
+      onCancel={() => updateStatus.mutate({ id: selected.id, data: { status: 'CANCELLED', reason: 'Cancelado pelo usuário' } })}
+      onStartSession={() => createSession.mutate({ appointmentId: selected.id, prontuario: '' })}
+      onDelete={() => deleteAppointment.mutate(selected.id, { onSuccess: () => setSelected(null) })}
+    />
+  )
 
   return (
-    <div className="flex gap-6 h-full">
-      <div className="flex-1 min-w-0 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="font-serif text-2xl text-text-1">Agenda</h1>
-          <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => navigate('/agenda/new')}>
+    <div className="space-y-5">
+      <PageHeader
+        title="Agenda"
+        description="Veja a semana, confirme sessões e acompanhe cada atendimento."
+        actions={
+          <Button variant="primary" size="md" icon={<Plus className="h-4 w-4" />} onClick={() => navigate('/agenda/new', { viewTransition: true })}>
             Agendar
           </Button>
+        }
+      />
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className={`surface p-3 transition-opacity sm:p-4 ${isFetching ? 'opacity-80' : ''}`}>
+          <CalendarView events={events} onEventClick={handleEventClick} onRangeChange={handleRangeChange} />
+          {!isFetching && events.length === 0 && (
+            <p className="px-2 pb-2 pt-1 text-center text-[13px] text-text-3">Nenhuma sessão neste período.</p>
+          )}
         </div>
 
-        {isLoading ? (
-          <AgendaSkeleton />
-        ) : (
-          <div className="rounded-2xl border border-border bg-bg-1 p-4">
-            {events && events.length > 0 ? (
-              <CalendarView events={events} onEventClick={handleEventClick} onDateSelect={handleDateSelect} />
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-bg-2">
-                  <Calendar className="h-6 w-6 text-text-3" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-text-3">Nenhum evento encontrado</p>
-                  <p className="mt-1 text-[12px] text-text-3">Nenhuma sessão agendada para este período</p>
-                </div>
-                <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => navigate('/agenda/new')}>
-                  Agendar sessão
-                </Button>
+        {isDesktop && (
+          <aside className="surface sticky top-2 p-5" aria-label="Detalhes da sessão">
+            {details ?? (
+              <div className="flex flex-col items-center gap-2 px-2 py-10 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-bg-2 text-text-3">
+                  <Clock size={20} />
+                </span>
+                <p className="text-[15px] text-text-1">Selecione uma sessão</p>
+                <p className="text-[13px] text-text-3">Clique em um horário do calendário para ver os detalhes e agir.</p>
               </div>
             )}
-          </div>
+          </aside>
         )}
       </div>
 
-      <aside className="w-80 shrink-0">
-        {selectedAppointment && selectedEvent ? (
-          <div key={selectedEvent.id} className="animate-scale-in rounded-2xl border border-border bg-bg-1 overflow-hidden">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
-              <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-base text-text-1 truncate">{selectedEvent.title}</h2>
-                {statusInfo && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusInfo.color }} />
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: statusInfo.color }}>
-                      {statusInfo.label}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="ml-3 rounded-lg p-1.5 text-text-3 hover:bg-bg-2 hover:text-text-1 transition-colors shrink-0"
+      {!isDesktop && (
+        <Dialog.Root open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="animate-fade-in fixed inset-0 z-[80] bg-[var(--scrim)] backdrop-blur-[2px]" />
+            <Dialog.Content
+              aria-describedby={undefined}
+              className="animate-scale-in fixed bottom-0 left-0 right-0 z-[81] max-h-[88dvh] overflow-y-auto rounded-t-2xl border border-border bg-bg-1 p-5 shadow-lg"
+              style={{ animationName: 'sheetUp' }}
+            >
+              <Dialog.Title className="sr-only">Detalhes da sessão</Dialog.Title>
+              <Dialog.Close
+                aria-label="Fechar"
+                className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-3 hover:bg-bg-2 hover:text-text-1"
               >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <DetailRow icon={User} label="Paciente" value={`Paciente ${fmtId(selectedAppointment.patientId)}`} />
-              <DetailRow icon={User} label="Profissional" value={`Profissional ${fmtId(selectedAppointment.professionalId)}`} />
-              <DetailRow icon={Clock} label="Horário" value={`${format(new Date(selectedAppointment.startTime), "dd/MM/yyyy HH:mm")} — ${format(new Date(selectedAppointment.endTime), "HH:mm")}`} />
-
-              {selectedAppointment.notes && (
-                <DetailRow icon={FileText} label="Observações" value={selectedAppointment.notes} />
-              )}
-            </div>
-
-            <div className="px-5 pb-5 space-y-2">
-              {selectedAppointment.status === 'SCHEDULED' && (
-                <Button variant="primary" size="sm" className="w-full" onClick={handleConfirm} loading={updateStatus.isPending}>
-                  Confirmar agendamento
-                </Button>
-              )}
-              {selectedAppointment.status === 'CONFIRMED' && (
-                <Button variant="primary" size="sm" className="w-full" onClick={handleCreateSession} loading={createSession.isPending}>
-                  Iniciar sessão
-                </Button>
-              )}
-              {selectedAppointment.status !== 'CANCELLED' && selectedAppointment.status !== 'DONE' && (
-                <Button variant="danger" size="sm" className="w-full" onClick={handleCancel} loading={updateStatus.isPending}>
-                  Cancelar
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" className="w-full" onClick={handleDelete} loading={deleteAppointment.isPending}>
-                Excluir agendamento
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-bg-1 px-5 text-center h-48 gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-2 text-text-3">
-              <ChevronRight size={16} />
-            </div>
-            <div>
-              <p className="text-sm text-text-3">Selecione um evento</p>
-              <p className="mt-0.5 text-[12px] text-text-3">Clique em uma consulta no calendário para ver detalhes</p>
-            </div>
-          </div>
-        )}
-      </aside>
+                <X size={18} />
+              </Dialog.Close>
+              {details ?? <div className="animate-shimmer h-40 rounded-lg" />}
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      )}
     </div>
   )
 }

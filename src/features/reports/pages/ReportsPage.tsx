@@ -1,74 +1,74 @@
-import { useMemo, useState } from 'react'
-import { BarChart2, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
+import { format, subDays } from 'date-fns'
+import { RefreshCw } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader/PageHeader'
 import { FinancialReportCard } from '@/features/reports/components/FinancialReportCard/FinancialReportCard'
 import { ClinicalReportCard } from '@/features/reports/components/ClinicalReportCard/ClinicalReportCard'
 import { ReportFilters } from '@/features/reports/components/ReportFilters/ReportFilters'
-import { useClinicalReport, useFinancialReport } from '@/features/reports/hooks/useReports'
+import { useExportReport, useReportSummary } from '@/features/reports/hooks/useReports'
+import type { ReportExport } from '@/types/reports'
 
-function getInitialPeriod(days = 30) {
-  const now = new Date()
-  const end = now.toISOString().split('T')[0]
-  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  return { start, end }
-}
+const iso = (d: Date) => format(d, 'yyyy-MM-dd')
 
 export default function ReportsPage() {
-  const initialPeriod = useMemo(() => getInitialPeriod(), [])
-  const [dates, setDates] = useState({ from: initialPeriod.start, to: initialPeriod.end })
+  const [dates, setDates] = useState(() => ({ from: iso(subDays(new Date(), 29)), to: iso(new Date()) }))
+  const [exporting, setExporting] = useState<ReportExport | null>(null)
 
-  const financialReportQuery = useFinancialReport({ from: dates.from, to: dates.to })
-  const clinicalReportQuery = useClinicalReport({ from: dates.from, to: dates.to })
+  const validPeriod = dates.from !== '' && dates.to !== '' && dates.to >= dates.from
+  const report = useReportSummary(validPeriod ? dates : { from: iso(subDays(new Date(), 29)), to: iso(new Date()) })
+  const exportReport = useExportReport()
 
-  const isLoading = financialReportQuery.isLoading || clinicalReportQuery.isLoading
+  const handleExport = (kind: ReportExport) => {
+    setExporting(kind)
+    exportReport.mutate(
+      { kind, params: dates },
+      {
+        onSuccess: (blob) => {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `${kind === 'appointments' ? 'sessoes' : 'cobrancas'}_${dates.from}_${dates.to}.csv`
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+          URL.revokeObjectURL(url)
+        },
+        onSettled: () => setExporting(null),
+      },
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
-        <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10 text-teal">
-          <BarChart2 size={20} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-serif text-text-1">Relatórios</h1>
-          <p className="mt-1 text-sm text-text-3">Acompanhe desempenho financeiro e resultados de tratamento em um único painel.</p>
-        </div>
-      </div>
+      <PageHeader title="Relatórios" description="Resultados financeiros e de atendimento do período escolhido." />
 
-      <ReportFilters from={dates.from} to={dates.to} onChange={(value) => setDates(value)} />
+      <ReportFilters from={dates.from} to={dates.to} onChange={setDates} onExport={handleExport} exporting={exporting} />
 
-      {isLoading ? (
-        <div className="page-enter grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
-            <div className="animate-shimmer h-4 w-1/3 rounded" />
-            <div className="animate-shimmer h-8 w-1/2 rounded" />
-            <div className="animate-shimmer mt-2 h-3 w-2/3 rounded" />
-            <div className="animate-shimmer mt-4 h-24 w-full rounded" />
-          </div>
-          <div className="flex flex-col gap-4 rounded-[var(--radius-xl)] border border-border bg-bg-1 p-6">
-            <div className="animate-shimmer h-4 w-1/3 rounded" />
-            <div className="animate-shimmer h-8 w-1/2 rounded" />
-            <div className="animate-shimmer mt-2 h-3 w-2/3 rounded" />
-            <div className="animate-shimmer mt-4 h-24 w-full rounded" />
-          </div>
+      {report.isLoading ? (
+        <div className="grid gap-6 xl:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="surface space-y-4 p-6">
+              <div className="animate-shimmer h-4 w-1/3 rounded" />
+              <div className="animate-shimmer h-9 w-1/2 rounded" />
+              <div className="animate-shimmer h-28 w-full rounded" />
+            </div>
+          ))}
+        </div>
+      ) : report.isError || !report.data ? (
+        <div className="surface flex flex-col items-center gap-3 px-6 py-14 text-center">
+          <p className="text-[15px] text-text-1">Não foi possível carregar os relatórios.</p>
+          <button
+            type="button"
+            onClick={() => void report.refetch()}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-bg-1 px-4 text-[13px] font-semibold text-text-1 shadow-sm transition hover:bg-bg-2"
+          >
+            <RefreshCw size={14} /> Tentar novamente
+          </button>
         </div>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-2">
-          {financialReportQuery.data ? (
-            <FinancialReportCard report={financialReportQuery.data} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
-              <AlertCircle size={22} className="text-text-3 opacity-50" />
-              <p className="text-sm text-text-3">Não foi possível carregar o relatório financeiro</p>
-            </div>
-          )}
-
-          {clinicalReportQuery.data ? (
-            <ClinicalReportCard report={clinicalReportQuery.data} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-border bg-bg-1 py-14 gap-3">
-              <AlertCircle size={22} className="text-text-3 opacity-50" />
-              <p className="text-sm text-text-3">Não foi possível carregar o relatório clínico</p>
-            </div>
-          )}
+        <div className={`grid gap-6 transition-opacity xl:grid-cols-2 ${report.isFetching ? 'opacity-70' : ''}`}>
+          <FinancialReportCard report={report.data} />
+          <ClinicalReportCard report={report.data} />
         </div>
       )}
     </div>

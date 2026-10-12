@@ -2,6 +2,7 @@ export interface TenantResponse {
   id: string
   name: string
   slug: string
+  plan: string
   logoUrl?: string
   cnpj?: string
   phone?: string

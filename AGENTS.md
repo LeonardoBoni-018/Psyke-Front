@@ -111,24 +111,33 @@ npx tsc --noEmit # Type check
 
 ## Design System Visual
 
-### Referência
-Linear, Vercel Dashboard, Resend, Raycast — dark, denso, preciso.
-NUNCA produzir interfaces com cara de "gerado por IA": sem gradientes roxo-azul, sem sombra enorme, sem ícones em círculos coloridos.
+### Direção
+Calmo, claro e preciso: canvas verde-acinzentado suave, cartões brancos, acento pinho (`--brand`). Tema **claro por padrão**, com escuro e "automático" (`data-theme` no `<html>`, definido antes do primeiro paint por `public/theme-init.js`; alternado por `useTheme`).
+Evitar o visual "gerado por IA": sem gradientes decorativos, sem rótulos em CAIXA ALTA/mono, sem ícone dentro de tile colorido como cabeçalho de página, sem palavra em itálico no título.
 
-### Tokens (já em globals.css)
-`--bg-0` fundo raiz, `--bg-1` cards/sidebar, `--bg-2` inputs, `--bg-3` hover
-`--border` borda padrão, `--border-hi` hover
-`--teal` primary, `--amber` warning, `--danger` error, `--info` link
-`--text-1` alto contraste, `--text-2` médio, `--text-3` baixo
-`--font-serif` títulos, `--font-mono` dados/labels, `--font-sans` geral
+### Tipografia
+- Títulos e números grandes: **Bricolage Grotesque** (`font-display`, também `font-serif` por compatibilidade).
+- Interface: **Figtree** (`font-sans`; `font-mono` é alias da sans — use `tabular` para números).
+- Texto sempre em *sentence case*; mínimo 12px.
+
+### Tokens (`src/styles/globals.css`)
+`--bg-0` canvas, `--bg-1` cartões/popovers, `--bg-2` campos e preenchimentos, `--bg-3` hover
+`--border`, `--border-hi`; `--brand`, `--brand-hi`, `--on-brand` (texto sobre o acento); `--amber`, `--danger`, `--info`
+`--text-1/2/3`; sombras `--shadow-sm/md/lg`; raios `--radius-sm…xl`.
+No Tailwind: `bg-bg-1`, `text-text-2`, `bg-brand/10`… (os tokens são envolvidos em `color-mix` para aceitar `/NN`).
+Aliases legados: `--teal*` → `--brand*`.
+
+### Componentes e padrões
+- `PageHeader` em toda página (título + descrição + ações); `.surface` para cartões; `Button` (`primary|ghost|danger`).
+- Shell: `Sidebar` com indicador deslizante, `Topbar` com busca, `CommandPalette` (Ctrl/⌘ K) e `ThemeToggle`.
+- Formulários: `FormField` (o bloco inteiro é um `<label>`; não aninhar outro `<label>`).
+- Datas com `formatDate` (`src/lib/date.ts`), moeda com `formatCurrency` — nunca `new Date('yyyy-MM-dd')`.
 
 ### Animações (em globals.css)
-- `.page-enter` — container raiz de páginas
-- `.item-enter` com `animationDelay` — linhas de lista (stagger 35-50ms)
-- `.animate-shimmer` — skeleton loading
-- `.animate-scale-in` — modais
-- `.animate-fade-in` — overlays
-- `.animate-slide-right` — drawer lateral
+- `.page-enter` (raiz de página), `.item-enter` + `animationDelay` (stagger 35–60ms), `.rise-in`, `.animate-grow` (barras), `.lift` (hover de cartões clicáveis)
+- `.animate-shimmer` (skeleton), `.animate-pop-in` (menus), `.animate-fade-in` (overlay), `.animate-scale-in` (escala simples, **sem** translate)
+- Transição de rota: passe `viewTransition` em `Link`/`navigate` (CSS `::view-transition-*`).
+- Contadores: `useCountUp`. Toda animação respeita `prefers-reduced-motion`.
 
 ### API
 `POST /auth/login` com `{ email, password, tenantId }` → `{ accessToken, refreshToken }`

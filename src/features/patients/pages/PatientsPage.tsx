@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-table'
 import { Search, Plus, ChevronLeft, ChevronRight, Users, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { PageHeader } from '@/components/layout/PageHeader/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { usePatients } from '@/features/patients/hooks/usePatients'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -138,15 +139,18 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-serif text-text-1">Pacientes</h1>
-        <Button size="sm" icon={<Plus size={15} />} onClick={() => navigate('/patients/new')}>
-          Novo paciente
-        </Button>
-      </div>
+      <PageHeader
+        title="Pacientes"
+        description="Busque por nome, e-mail, CPF ou telefone."
+        actions={
+          <Button size="md" icon={<Plus size={15} />} onClick={() => navigate('/patients/new', { viewTransition: true })}>
+            Novo paciente
+          </Button>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-bg-2 px-3 py-2 transition focus-within:border-teal focus-within:shadow-[0_0_0_3px_var(--teal-10)]">
+        <div className="flex h-10 items-center gap-2 rounded-lg border border-border bg-bg-1 px-3 shadow-sm transition focus-within:border-brand focus-within:shadow-focus">
           <Search size={16} className="text-text-3" />
           <input
             type="text"
@@ -161,7 +165,7 @@ export default function PatientsPage() {
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
           aria-label="Filtrar por status"
-          className="rounded-lg border border-border bg-bg-2 px-3 py-2 text-sm text-text-1 outline-none transition focus:border-teal focus:shadow-[0_0_0_3px_var(--teal-10)]"
+          className="h-10 rounded-lg border border-border bg-bg-1 px-3 text-sm text-text-1 shadow-sm outline-none transition focus:border-brand focus:shadow-focus"
         >
           {statusOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -191,7 +195,7 @@ export default function PatientsPage() {
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-text-3"
+                      className="px-4 py-3 text-left text-[13px] font-medium text-text-3"
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </th>

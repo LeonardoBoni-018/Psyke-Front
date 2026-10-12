@@ -1,31 +1,34 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useFinancialReport, useClinicalReport } from './useReports'
-import { getFinancialReportSummary, getClinicalReportSummary } from '@/features/reports/services/reportsApi'
 import type { ReactNode } from 'react'
+import { useReportSummary } from './useReports'
+import { getReportSummary } from '@/features/reports/services/reportsApi'
+import type { ReportSummary } from '@/types/reports'
+
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
 
 vi.mock('@/features/reports/services/reportsApi', () => ({
-  getFinancialReportSummary: vi.fn(),
-  getClinicalReportSummary: vi.fn(),
+  getReportSummary: vi.fn(),
+  exportReportCsv: vi.fn(),
 }))
 
-const mockFinancialReport = {
-  totalRevenue: 10000,
-  totalReceivables: 4000,
-  totalPaid: 6000,
-  overdueAmount: 1000,
-  openInvoices: 15,
-  revenueSeries: [{ month: '2026-05', amount: 10000 }],
+const summary: ReportSummary = {
+  from: '2026-05-01',
+  to: '2026-05-30',
+  revenue: 10000,
+  pendingAmount: 1000,
+  invoicesByStatus: { PAID: 40, PENDING: 5 },
+  totalAppointments: 120,
+  appointmentsByStatus: { DONE: 90, CANCELLED: 20, NO_SHOW: 10 },
+  attendanceRate: 90,
+  cancellationRate: 16.7,
+  newPatients: 12,
+  activePatients: 80,
+  revenueByMonth: [{ month: '2026-05', amount: 10000 }],
+  sessionsByProfessional: [{ professionalId: 'pr1', name: 'Dra. Ana', sessions: 60 }],
 }
 
-const mockClinicalReport = {
-  adherenceRate: 0.85,
-  activeRecords: 120,
-  newPatients: 30,
-  topDiagnoses: [{ name: 'Transtorno de Ansiedade', count: 45 }],
-}
-
-const defaultParams = { from: '2026-05-01', to: '2026-05-30' }
+const params = { from: '2026-05-01', to: '2026-05-30' }
 
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -34,59 +37,26 @@ function createWrapper() {
   }
 }
 
-describe('useReports', () => {
-  describe('useFinancialReport', () => {
-    it('returns financial report on success', async () => {
-      vi.mocked(getFinancialReportSummary).mockResolvedValue(mockFinancialReport)
-
-      const { result } = renderHook(() => useFinancialReport(defaultParams), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(result.current.data).toEqual(mockFinancialReport)
-    })
-
-    it('calls API with correct params', async () => {
-      vi.mocked(getFinancialReportSummary).mockResolvedValue(mockFinancialReport)
-
-      renderHook(() => useFinancialReport(defaultParams), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(getFinancialReportSummary).toHaveBeenCalledWith(defaultParams))
-    })
-
-    it('returns error on failure', async () => {
-      vi.mocked(getFinancialReportSummary).mockRejectedValue(new Error('API error'))
-
-      const { result } = renderHook(() => useFinancialReport(defaultParams), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(result.current.isError).toBe(true))
-    })
+describe('useReportSummary', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  describe('useClinicalReport', () => {
-    it('returns clinical report on success', async () => {
-      vi.mocked(getClinicalReportSummary).mockResolvedValue(mockClinicalReport)
+  it('returns the report summary for the period', async () => {
+    vi.mocked(getReportSummary).mockResolvedValue(summary)
 
-      const { result } = renderHook(() => useClinicalReport(defaultParams), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useReportSummary(params), { wrapper: createWrapper() })
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(result.current.data).toEqual(mockClinicalReport)
-    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.revenue).toBe(10000)
+    expect(getReportSummary).toHaveBeenCalledWith(params)
+  })
 
-    it('calls API with correct params', async () => {
-      vi.mocked(getClinicalReportSummary).mockResolvedValue(mockClinicalReport)
+  it('surfaces errors', async () => {
+    vi.mocked(getReportSummary).mockRejectedValue(new Error('boom'))
 
-      renderHook(() => useClinicalReport(defaultParams), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useReportSummary(params), { wrapper: createWrapper() })
 
-      await waitFor(() => expect(getClinicalReportSummary).toHaveBeenCalledWith(defaultParams))
-    })
-
-    it('passes optional professionalId', async () => {
-      const params = { ...defaultParams, professionalId: 'prof-1' }
-      vi.mocked(getClinicalReportSummary).mockResolvedValue(mockClinicalReport)
-
-      renderHook(() => useClinicalReport(params), { wrapper: createWrapper() })
-
-      await waitFor(() => expect(getClinicalReportSummary).toHaveBeenCalledWith(params))
-    })
+    await waitFor(() => expect(result.current.isError).toBe(true))
   })
 })

@@ -21,7 +21,7 @@ describe('LoginPage', () => {
   it('renders brand section with Psyke logo', () => {
     wrap(<LoginPage />)
     expect(screen.getByText('Psyke')).toBeInTheDocument()
-    expect(screen.getByText('Clinic OS — v2.0')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   })
 
   it('renders all form fields', () => {
@@ -59,10 +59,8 @@ describe('LoginPage', () => {
     expect(input.type).toBe('text')
   })
 
-  it('renders feature tags', () => {
+  it('links to password recovery', () => {
     wrap(<LoginPage />)
-    expect(screen.getByText('Prontuário')).toBeInTheDocument()
-    expect(screen.getByText('Agenda')).toBeInTheDocument()
-    expect(screen.getByText('LGPD')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Esqueceu a senha?' })).toHaveAttribute('href', '/forgot-password')
   })
 })
